@@ -1,0 +1,175 @@
+07월 21일 오전수업
+
+[ cube & grouping sets ]
+
+rollup 과 cube 는 1차 그룹일땐 거의 비슷하다.
+
+cube 는 2차 그룹일때 차이가 나타나는데, 부서 + 성별, 부서 소계, 성별 소계, 총계가 나온다.
+
+동일한 부서이면서, 동일한 성별끼리 
+동일한 부서 별 소계
+성별, 성별 별 소계
+총계
+
+
+rollup 은 부서 + 성별, 부서소계, 총계만 나온다.
+
+동일한 부서이면서, 동일한 성별끼리 
+동일한 부서 별 소계
+총계
+
+
+** rollup(a,b,c) 은 grouping sets( (a,b,c),(a,b),(a),() ) 와 같다.
+** cube(a,b,c) 은 grouping sets( (a,b,c),(a,b),(b,c),(a,c),(a),(b),(c),() ) 와 같다.
+==> rollup은 뒤에서부터 하나씩 없어진다.
+==> rollup(department_id, gender) == grouping sets( (department_id, gender), (department_id), ( ) )
+
+
+==> cube는 전체 그룹, 짝지을 수 있는 경우의 수, 총계로 나온다.
+==> cube(department_id, gender) ==>grouping sets( (department_id, gender), (department_id), (gender), ( ) )
+
+================================================================
+
+grouping sets는 입맛대로 소계, 총계를 바꿀 수 있다.
+같은 부서이면서, 같은 성별 을 지우고, 소계와 총계만 나오게 할 수 있다.
+
+================================================================
+
+** sort를 했을 때 문자화한 필드로 하면 순서가 이상하게 나올 수 있지만 inline view의 필드를 이용해 sort를 하면 제대로 정렬될 수 있다.
+
+================================================================
+
+[ having ]
+
+<< select 문의 구동순서 >>
+select -- 5
+from -- 1
+where -- 2
+group by -- 3
+having -- 4 
+order by -- 6
+
+집계함수에 대한 조건은 having에 써야 한다.
+
+왜냐하면 실행순서가 from 다음에 where 인데, 그룹함수는 3번째인 group by 에서 그룹을 먼저 지어야 사용할 수 있는 것이여서 2번째 실행되는 where 에서는 조건으로 사용할 수 없다.
+==> 그룹함수에 대한 조건절은 having 에서 써야한다!
+
+** table에 조건을 주려면 where 절에
+** 그룹함수에 조건을 주려면 having 절에
+
+================================================================
+
+[ 누계 ]
+
+1. sum( sum(누적되어야할 컬럼명) ) over(order by 누적되어질 기준이 되는 컬럼명 asc[desc] )
+==> sum(sum(panmaesu)) over(order by to_char(panmaedate, 'yyyy-mm-dd') asc ) AS 일별누적판매량
+
+1번은 특정 데이터에 대해서만 사용한다. (부분)
+
+
+2. sum(누적되어야할 컬럼명) over(partition by 그룹화 되어질 컬럼명 
+                                        order by 누적되어질 기준이 되는 컬럼명 asc[desc] )
+
+2번은 전체 데이터에 대해서만 사용한다. (전체)
+
+
+** tbl_panmae 테이블에서 판매일자가 1개월전 '01'일(즉, 현재가 2021년 7월 21일이니 2021년 6월 1일 부터)부터 판매된 모든제품에 대한 일별판매량과 일별누적판매량을 나타내세요.
+
+** where panmaedate >= to_date(to_char(add_months(sysdate, -1), 'yyyy-mm-')||'01','yyyy-mm-dd')
+==> 2021-06-01 (00h 00mi 00s)
+★★★ 날짜에 있어서 년 / 월 / 일만 나오고 시 / 분 / 초가 표시가 안되면 무조건 0시 0분 0초이다.
+
+★★★ 즉, to_date(to_char(add_months(sysdate, -1), 'yyyy-mm')||'-01', 'yyyy-mm-dd') 는 06월 01일 0시 0분 0초(자정)이다.
+
+그래서 부등호로 >= 를 해야 자정 포함 이후부터의 날짜가 출력된다.
+
+판매일자 >= 06월 01일 (00시 00분 00초)
+
+================================================================
+
+avg 에서 내가 원하는 타입의 자료들만의 평균을 구하고싶다면, decode에서 else 값을 설정하지 않아야 (null)로 들어가서 내가 원하는 것들의 평균만 구할 수 있다.
+==> else 를 0으로 줘버리면 분모가 남자 + 여자가 되어버림
+ex. avg( decode(GENDER, '남', salary) )
+
+================================================================
+================================================================
+================================================================
+================================================================
+================================================================
+
+07월 21일 오후수업
+
+[ 서브쿼리 ]
+==> select 문속에 또 다른 select 문이 포함되어져 있을 때 포함되어진 select 문을 Sub Query(서브쿼리) 라고 한다.
+
+
+select ...
+from ....       ==> Main Query(메인쿼리 == 외부쿼리)
+where ... in( select ....     ==> Sub Query(서브쿼리 == 내부쿼리)
+                from ..... )
+
+** 무조건 where 절 안에만 넣어야 하는 건 아니다.
+
+select department_id AS 부서번호
+, count(*) AS 인원수
+, round(count(*) / (select count(*) from employees) * 100, 1) AS 백분율
+from employees
+group by rollup(department_id) 
+order by 1;
+
+
+** alisa에 % 표시를 하고싶다면 쌍따옴표("") 를 써야 한다.
+
+================================================================
+
+[ Sub Query ANY, ALL ]
+
+Sub Query(서브쿼리)에서 사용되어지는 ANY 는 OR 와 흡사하고,
+Sub Query(서브쿼리)에서 사용되어지는 ALL 은 AND 와 흡사하다.
+
+
+select *
+from employees
+where NVL(department_id, -9999) != 30 AND
+salary in(11000, 3100, 2900, 2800, 2600, 2500);
+
+= 대입연산자는 한 개만의 값을 넣어줄 수만 있다, 복수 개의 값을 넣으려면 in을 써야한다
+in 과 =ANY는 같다.
+
+A = B (O)
+A = (B, C, D, F) (X)
+A in (B, C, D, F) (O)
+A =ANY(B, C, D, F) (O)
+
+
+★ ALL 을 쓰기 위해서는 서브쿼리 select 결과물에서 null이 없도록 해야한다.
+
+select employee_id AS 사원번호
+,      first_name || ' ' || last_name AS 사원명
+,      salary*commission_pct AS 수당
+from employees
+where salary*commission_pct >= ALL (select salary*commission_pct from employees
+                                            where salary*commission_pct is not null ); 
+
+
+★★★ ANY 와 ALL 은 조건이 참이면 값을 메모리에 올려서 출력해주는 것이다.
+★★★ 서브쿼리 select 에서 비교할 값들을 퍼와서, ANY / ALL에 따라서 비교한 다음에, 최종결과값이 참이되면 메인쿼리 select 문에서 출력해준다.
+
+
+where salary*commission_pct > (select min(salary*commission_pct) from employees)   
+where salary*commission_pct > ANY (select salary*commission_pct from employees)
+
+위 두 구절은 같은 뜻이다.
+
+> any(a, b) : a,b 중 최소보다 큰
+
+> all(a, b) : a,b 중 최대보다 큰
+
+< any(a, b) : a,b 중 최대보다 작은
+
+< all(a, b) : a,b 중 최소보다 작은
+
+
+================================================================
+
+[ Pairwise(쌍) Sub Query ]

@@ -1,0 +1,123 @@
+07월 23일 오전수업
+
+[ with 절을 사용한 inline view 를 사용한 JOIN ]
+
+    with V1 as ( 
+            select department_id, employee_id, first_name || ' ' || last_name AS ENAME, salary
+            from employees 
+            where department_id in (10,30,50)
+        )
+
+이 전체를 V1이라는 테이블로 간주한다는 뜻이다.
+------------------------------------------------------------------------------------------------------------
+    with V1 as ( 
+            select department_id, employee_id, first_name || ' ' || last_name AS ENAME, salary
+            from employees 
+            where department_id in (10,30,50)
+        ),   V2 as ( 
+            select DEPARTMENT_ID
+                 , TRUNC(avg(salary)) AS DEPT_AVG_SAL
+            from employees
+            where department_id in (10,30,50)
+            group by department_id 
+        )
+
+위의 ( ) 는 V1, 아래 ( ) 는 V2로 보겠다.
+------------------------------------------------------------------------------------------------------------
+기존에 from 절에 쓰던 inline view 방식을 전통적인 inline view 라고 말한다.
+with 절을 사용해 밖으로 빼놓는다면 가독성이 조금 더 편해진다.
+==> 실행할 땐 같이 묶어서 실행을 해야 작동된다.
+
+그리고 실행할 테이블에서 from v1 join v2라고 쓰면 된다.
+
+==================================================================
+
+[ DISTINCT 중복제거하기 & 퀴즈 풀이 ]
+
+select 되어진 행의 결과물에서 중복된 행이 1번만 나오도록 하려면 select distinct 를 사용하면 된다.
+------------------------------------------------------------------------------------------------------------
+== SQL 1992 CODE 방식 ==
+
+   select distinct A1.* 
+   from tbl_authorbook A1,tbl_authorbook A2 
+   where A1.bookname = A2.bookname AND A1.authorname != A2.authorname;
+------------------------------------------------------------------------------------------------------------
+== SQL 1999 CODE 방식 ==
+
+   select distinct A1.* -- A1의 모든것만 보겠다.
+   from tbl_authorbook A1 JOIN tbl_authorbook A2 -- SQL 1999 CODE 방식
+   ON A1.bookname = A2.bookname AND A1.authorname != A2.authorname; -- 조인조건절
+------------------------------------------------------------------------------------------------------------
+
+이렇게 쓰면 경우의 수 때문에 중복되서 나오던 그리스로마신화 저자들의 중복은 사라진다.
+
+★ select 문에서 distinct 와 order by 절을 함께 사용할때는 조심해야 한다.
+★ select 문에 distinct 가 있는 경우 order by 절에는 select 문에서 사용된 컬럼만 들어올 수 있다.
+★ 또는 select 문에 distinct 가 있는 경우 order by 절을 사용하지 않아야 한다.
+
+==> distinct를 쓸 때 order by 절에는 반드시 select 문에 쓰인 컬럼만 사용해야 한다.
+==> 또는 select 문에 distinct를 썼다면, order by를 쓰지 말자.
+
+==================================================================
+
+[ Multi Table JOIN 다중 테이블 조인 ]
+
+   select *
+    from REGIONS r 
+    join COUNTRIES c 
+    on r.REGION_ID = c.REGION_ID  -- REGIONS 와 COUNTRIES 를 연결
+    join LOCATIONS l 
+    on c.COUNTRY_ID = l.COUNTRY_ID -- 거기에 또 LOCATION 도 연결됨
+    join DEPARTMENTS d
+    on l.LOCATION_ID = d.LOCATION_ID -- 거기에 또 DEPARTMENTS 도 연결됨
+    join EMPLOYEES e
+    on d.DEPARTMENT_ID = e.DEPARTMENT_ID
+    order by 1;
+
+==================================================================
+
+[ 과제 ] -- 완
+
+==================================================================
+
+
+07월 23일 오후수업
+
+[ SET 연산자 ]
+다른 말로, 집합연산자이다.
+
+UNION은 첫번째 컬럼별로 자동으로 SORT 오름차순 정렬이 되며, 중복되는 값은 1번만 나온다.
+
+UNION ALL은 그냥 A 집합과 B 집합을 단순하게 붙여버린다. 중복값도 그대로 나오고, 정렬도 없다.
+
+** ' ' : 공백
+** '' : null
+** 공백과 null은 다르다!
+
+** grouping은 0 아니면 1이 나온다. 0이면 그룹화가 됐다는 것이고 // 1이면 그룹을 안 지었다는 것이다.
+
+
+합계를 구할때는 중복됐다고 없애버리면 안 된다.
+10개 팔린게 여러번 있다고 union은 삭제해버리는데 그러면 안되고,
+UNION ALL을 써서 전체합계량이라는 분모를 구해야 한다.
+
+==================================================================
+
+[ INTERSECT ]
+    A ∩ B = {a,b}  ==> INTERSECT
+                                 {a,b}
+교집합
+
+
+
+
+==================================================================
+
+[ MINUS ] 
+
+    A - B = {x,e,g} ==> MINUS 
+                              {x,e,g}
+
+    B - A = {c,d,y,k,m} ==> MINUS 
+                                {c,d,y,k,m}
+차집합

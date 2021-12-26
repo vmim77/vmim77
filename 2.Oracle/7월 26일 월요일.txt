@@ -1,0 +1,226 @@
+07월 26일 오전수업
+
+[ Pseudo 컬럼 = 의사, 유사, 모조 컬럼 ]
+Pseudo(의사) Column 은 rowid 와 rownum 이 있다.
+
+==================================================================
+
+[ rowid ]
+rowid 는 오라클이 내부적으로 사용하기 위해 만든 ID 값으로써 행에 대한 ID값 인데
+오라클 전체내에서 고유한 값을 가진다.
+
+모든 테이블마다 rowid가 존재한다. (==유사컬럼)
+
+( 예시 )
+AAAFBJAAEAAAAG+AAA	leess	이순신	서울
+AAAFBJAAEAAAAG+AAB	eomjh	엄정화	인천
+AAAFBJAAEAAAAG+AAC	kangkc	강감찬	수원
+AAAFBJAAEAAAAG+AAD	leess	이순신	서울
+AAAFBJAAEAAAAG+AAE	eomjh	엄정화	인천
+AAAFBJAAEAAAAG+AAF	kangkc	강감찬	수원
+AAAFBJAAEAAAAG+AAG	leess	이순신	서울
+AAAFBJAAEAAAAG+AAH	eomjh	엄정화	인천
+AAAFBJAAEAAAAG+AAI	kangkc	강감찬	수원
+
+==> 이순신들은 value 값은 같지만, rowid는 모두 다르다.
+
+어떠한 행을 지울때, value 값은 똑같지만 rowid는 모두 다르기 때문에 그것을 기준으로 지울 수 있다.
+
+==================================================================
+
+[ rownum ]
+
+행의 번호를 의미하며, 게시판 등 웹에서 아주 많이 사용된다.
+rownum(행번호)인데, 유사컬럼으로 원래는 테이블에 있지 않는 것이다. (==보조컬럼)
+모든 테이블에 rownum이 다 있다.
+
+기본적으로 rownum은 insert 되어진 순서대로 나온다.
+단순히 행의 번호만 붙여주는 것이다. order by 절을 이용해서 순서를 바꿔줄 수 있다.
+
+row_number( ) over( ) 함수를 사용해서 비슷하게 나타낼 수 있다.
+==> row_number() over(order by boardno desc)
+==> 글번호를 내림차순해서 가장 높은 글번호의 글부터 1번을 준다.
+
+1	5	오늘도 좋은 하루되세요	                kimys
+2	4	기쁘고 감사함이 넘치는 좋은 하루되세요    leess
+3	3	건강하세요	youks
+4	2	반갑습니다	eomjh
+5	1	안녕하세요	leess
+
+
+==> rownum은 처음 where 절에서 썼을 때는 제대로 출력되나, 다시 where 절에 쓰면 작동하질 않는다.
+
+★ rownum 은 where 절에 바로 쓸 수가 없다.
+★ 그래서 rownum 을 가지는 컬럼의 별칭을 만든 후에 inline view 를 사용해야 한다.
+
+where rownum between 3 and 4; ( X )
+where RNO between 1 and 2; ( O )
+
+최신글을 맨 위로 올리기 위해서 역순으로 만든 inline view 를 먼저 만들고,
+rownum 을 만들고 별칭을 준 inline view 를 또 만들고,
+페이지 바 별로 select 문을 만든다.
+
+** rownum과 마찬가지로 row_number()도 where 절에 바로 쓸 수가 없다.
+
+select boardno, subject, userid, registerday
+from
+  (
+      select row_number() over(order by boardno desc) AS RNO
+           , boardno 
+           , subject 
+           , userid  
+           , to_char(registerday, 'yyyy-mm-dd hh24:mi:ss') AS REGISTERDAY
+      from tbl_board 
+  ) V
+where RNO between 1 and 2;  <== rownum 이든 row_number() 는 항상 이렇게 별칭으로 where 절에 써야 한다.
+
+
+★ 페이징 처리에는 rownum 과 row_number() 함수를 사용한다.
+
+==================================================================
+
+[ DML ] ★★★★★
+
+데이터 조작어 Data Manuplation Language
+ 
+insert update, delete, merge
+DML 문은 기본적으로 수동 commit 이다.
+DML 문을 수행한 다음에는 바로 디스크(파일)에 적용되지 않고 commit 해야만 적용된다.
+그래서 DML 문을 수행한 다음에 디스크(파일)에 적용치 않고자 한다라면 rollback 하면 된다.
+
+==================================================================
+
+[ insert ]
+
+기본적인 insert 문법 ==> insert into 테이블명(컬럼명1,컬럼명2,...) values(값1,값2,...); 
+
+==> insert all 은 select 되어진 결과물을 동시에 2개의 테이블에 넣을 때 사용한다.
+
+※ Unconditional insert all  -- ==>조건이 없는 insert 
+[문법]  
+insert all 
+into 테이블명1(컬럼명1, 컬럼명2, ....)
+values(값1, 값2, .....)
+into 테이블명2(컬럼명3, 컬럼명4, ....)
+values(값3, 값4, .....)
+SUB Query문; 
+
+==> select 되어진 결과물을 테이블 2개 이상에 동시에 넣어줄 땐 이렇게 사용한다.
+
+※ Conditional insert all -- ==> 조건이 있는 insert all
+조건(where절)에 일치하는 행들만 특정 테이블로 찾아가서 insert 하도록 하는 것이다.   
+
+[문법]
+insert all 
+when then
+into 테이블명(컬럼명, 컬럼명)
+values()
+when then
+into 테이블명2(컬럼명, 컬럼명)
+values()
+SUB Query문; 
+
+
+==> 양쪽 테이블에 무조건 똑같이 넣어줄땐 unconditional insert all 을 쓰고,
+==> 각각 테이블에 서로 다른 값을 넣어줄땐 conditional insert all 을 쓴다.
+
+==================================================================
+
+[ 원격지 서버 설정 및 접속하기 ]
+
+
+인바운드 : 외부에서 나의 PC로 들어오는 것
+아웃바운드 : 내가 외부로 나가는 것이다.
+
+
+원격지 서버에 접속하기
+
+merge 는 테이블에 원하는 데이터가 있으면 그 데이터를 UPDATE하고 없으면 INSERT하는 구문이다.
+
+update는 기존의 테이블의 데이터를 바꾸는 것이다.
+
+
+==================================================================
+
+[ DQL ] ★★★
+
+데이터 질의어 Data Query Language
+ 
+DQL 은 select 를 말한다.
+
+==================================================================
+==================================================================
+==================================================================
+==================================================================
+==================================================================
+
+
+07월 26일 오후수업
+
+
+
+[ TCL ] ★★★★★
+
+트랜잭션 제어어 는 commit, rollback 을 말한다.
+트랙잭션이란? 관련된 일련의 DML로 이루어진 한꾸러미(한세트) 를 말한다.
+** DML - insert, update, delete, merge
+
+트랙잭션이라 함은 데이터베이스의 상태를 변환시키기 위하여 논리적 기능을 수행하는 하나의 작업단위를 말한다.
+
+예>>   네이버카페(다음카페)에서 활동
+글쓰기(insert)를 1번하면 내포인트 점수가 10점이 올라가고(update),
+댓글쓰기(insert)를 1번하면 내포인트 점수가 5점이 올라가도록 한다(update)
+
+★ Transaction(트랜잭션) 처리에서 가장 중요한 것은 
+★ 모든 DML문이 성공해야만 최종적으로 모두 commit 을 해주고,
+★ DML문중에 1개라도 실패하면 모두 rollback 을 해주어야 한다는 것이다. 
+==> 글쓰기도 성공하고, 내포인트 점수도 올라가는게 성공해야 commit이 된다.
+==> 글쓰기는 성공했는데, 점수 올라가기가 실패하면 rollback 된다.
+
+==================================================================
+
+[ ROLLBACK TO SAVEPOINT ] 
+
+그냥 롤백은 commit 한 이후로 모든 DML 을 취소시킨다.
+SAVEPOINT는 SAVEPOINT가 선언되어진 이후의 DML 을 취소시킨다.
+
+==================================================================
+
+[ DDL ]
+
+데이터 정의어 
+create, drop, alter, truncate 
+
+create - 생성
+drop - 삭제
+alter - 변경
+truncate - 자르기
+
+==================================================================
+
+[ DCL ] 
+데이터 제어어
+grant(권한 부여하기), revoke(권한 회수하기) 
+
+auto commit; 문이다.
+
+
+** DML (insert, update, delete, merge) 만 수동 commit;이다.
+** 그 나머지는 전부다 auto commit이다. DDL, DCL 
+
+         ==================================================================
+
+[ 시퀀스(sequence) ] 
+
+시퀀스(sequence)란? 쉽게 생각하면 은행에서 발급해주는 대기번호표 와 비슷한 것이다.
+시퀀스(sequence)는 숫자로 이루어져 있으며 매번 정해진 증가치 만큼 숫자가 증가되어지는 것이다. 
+
+** nomaxvalue, nominvalue, nocycle이 대부분이다. 
+** 게시판 글번호에서 사용한다. 내가 insert 하는데 지금 글번호가 어디까지 왔는지 모르니깐 시퀀스를 사용하여 알아서 주도록 시킨다.
+==> 게시판에서는 글번호가 반복되서는 안 된다. 계속해서 증가가 되야 한다.
+==> 그러므로 nocycle이다.
+
+
+
+★ 서브쿼리 insert, 상관쿼리 다시 보기
+★ 내일 제약조건 테이블 만들기
