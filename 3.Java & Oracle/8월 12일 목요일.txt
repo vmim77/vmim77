@@ -1,0 +1,135 @@
+08월 12일 오전수업
+
+=============================================================
+
+[ 최근 1주일간 일자별 게시글 작성건수 조회하기 ]
+
+sysdate - writeday 로는 작성일자가 어제인지 오늘인지 알 수 없다.
+
+★ 시 / 분 / 초가 없다면 무조건 자정이 된다.
+to_char(sysdate, 'yyyy-mm-dd');
+==> 2021-08-12 (00:00:00)
+
+연체를 할 때도 그냥 sysdate - 반납일자로 하는게 아니라, 시 / 분 / 초를 똑같이 맞춰서 하루 하루를 계산해야 한다.
+
+※ 날짜의 기본 포맷 : RR/MM/DD
+
+sysdate를 오늘날짜(09시 21분)으로 보는게 아니라 자정으로 보고, 작성일자도 정확한 작성 시간으로 보는게 아니라 자정으로 보고 계산을 해야 한다.
+==> 현재날짜 자정 - 작성일자 자정 ==> 정확한 일수
+-----------------------------------------------------------------------------------------------------------
+select COUNT(*) TOTAL
+      , SUM( decode( to_date(to_char(sysdate, 'yyyy-mm-dd')) - to_date(to_char(writeday, 'yyyy-mm-dd')), 6, 1, 0) ) AS PREVIOUS6 
+      , SUM( decode( to_date(to_char(sysdate, 'yyyy-mm-dd')) - to_date(to_char(writeday, 'yyyy-mm-dd')), 5, 1, 0) ) AS PREVIOUS5
+      , SUM( decode( to_date(to_char(sysdate, 'yyyy-mm-dd')) - to_date(to_char(writeday, 'yyyy-mm-dd')), 4, 1, 0) ) AS PREVIOUS4
+      , SUM( decode( to_date(to_char(sysdate, 'yyyy-mm-dd')) - to_date(to_char(writeday, 'yyyy-mm-dd')), 3, 1, 0) ) AS PREVIOUS3
+      , SUM( decode( to_date(to_char(sysdate, 'yyyy-mm-dd')) - to_date(to_char(writeday, 'yyyy-mm-dd')), 2, 1, 0) ) AS PREVIOUS2
+      , SUM( decode( to_date(to_char(sysdate, 'yyyy-mm-dd')) - to_date(to_char(writeday, 'yyyy-mm-dd')), 1, 1, 0) ) AS PREVIOUS1
+      , SUM( decode( to_date(to_char(sysdate, 'yyyy-mm-dd')) - to_date(to_char(writeday, 'yyyy-mm-dd')), 0, 1, 0) ) AS TODAY
+from jdbc_board
+where to_date(to_char(sysdate, 'yyyy-mm-dd')) - to_date(to_char(writeday, 'yyyy-mm-dd')) < 7;
+-----------------------------------------------------------------------------------------------------------
+
+1주일간 게시글 작성건수를 위해서 DTO를 만들어줄 필요는 없다.
+HashMAP에 담아서 가져오면 된다. 
+==> 얘는 오로지 select용이지, insert 용은 아니여서
+==> DTO는 insert 용 이면서, 동시에 select 용이면 만든다.
+
+=============================================================
+
+[ 이번달 일자별 게시글 작성건수 조회하기 ]
+
+List<Map<String, String>> ==> 맵이 여러개인 List
+
+DTO를 못 쓰니깐 행을 컬럼별로 MAP에 넣고, 그 한 행을 LIST에 넣는다.
+
+=============================================================
+
+[ 관리자 - 모든회원정보조회 ]
+
+회원은 MemberDTO가 있으니깐 List<MemberDTO> 로 받아온다.
+입력받은 스캐너 값에 따라서 sort가 달라진다.
+
+
+
+=============================================================
+
+[ 미니프로젝트 ]
+
+-----------------------------------------------------------------------------------------------------------
+▶ 테이블들 필드 타입, 유효성 확인하기
+▶ eXERD 최신화하기
+▶ 코드 문법 확인하기
+
+도서상세 bookno컬럼 생성 
+
+도서상세 시퀀스 생성 
+==> 도서테이블에서 빌리는 책을 삭제해야하는데, 대여상세가 foreign key로 되어있어서 삭제 불가능
+==> 그래서 PK이자 FK인 fk_isbn을 PK를 삭제하고, PK용 bookno컬럼 생성, fk_isbn 은 on delete cascade로 재생성, unique 제약조건을 줌
+
+도서상세 시퀀스 - seq_tbl_book
+
+★ lend_detail isbn 포린키 제약 삭제 --> 도서테이블 삭제하기 위해서
+
+[정리]
+insert - if(입력받은 ISBN이 우리가 가지고 있는 책이면서 && status가 0인 행){대여, 대여상세}
+update - 도서 JOIN 도서상세 --> status 컬럼 --> 1(대여중)
+
+insert 두 번 
+update 한 번
+
+------------------
+
+(2)
+
+연체 --> sysdate - 반납일자 > 0 이면  연체테이블로 insert
+
+
+lend_detail isbn컬럼 다시 fk_isbn으로 바꾸기
+
+
+
+result = -1 ==> 대여 테이블 insert 오류
+result = -2 ==> 대여상세 테이블 insert 오류
+result = -3 ==> 도서상세 테이블 update 오류
+
+
+도서 반납하기 
+tbl_lend 와 lend_detail을 조인해서 로그인한 사람이 대여중인 책을 보여준다.
+(대출번호와 ISBN을 가져온다)
+
+반납하실 책의 ISBN을 입력해주세요 ==>
+
+lend_detail에서 해당 대여목록 삭제
+
+
+
+==================================================================
+
+1. 걔가 빌린 책 목록 보여주고 (완)
+2. ISBN 입력받고 (완)
+3. 걔 랜드코드 알아오고 (완)
+4. 그 랜드코드에서 빌린 책의 수량이 몇 개인지 확인(완)
+5. 얘를 삭제하면 0개가 되면 if(cnt = 1) 이면 대여상세, 대여 둘 다 삭제. (완)
+
+반납예정일자보다 오늘날짜가 느리면 연체테이블로 insert
+대여할때 대여기록 테이블들에도 같이 넣기
+
+==================================================================
+
+다음주 ==> 웹(프론트엔드)
+
+발표는 내일 힘드신 분들은, 후번으로 
+발표는 오후부터
+내일 수업 X
+
+==================================================================
+
+★ 연체테이블 대여상세일련번호(FK) 삭제했음 ==> 히스토리껄 FK하도록 테이블 만들어야 합니다!!
+★ 반납 트랜잭션만 추가 
+★ 반납할 책 없으면 메시지 안 뜨게
+
+로그아웃 -> 로그인 안했는데 로그아웃댐
+대여중인 도서조회하기 -> 책 이름 안 나옴
+
+
+=================================================================
