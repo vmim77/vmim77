@@ -1,0 +1,208 @@
+09월 27일 오전수업
+
+[ 비밀번호 찾기 마무리 ]
+
+- 세션에 저장해둔 인증코드와 사용자가 입력한 인증코드를 비교한다.
+- 올바른 인증코드를 입력한 경우 새 비밀번호 설정하기 페이지로 이동시킨다.
+==> 개발자 또한 비밀번호는 SHA-256으로 암호화되었기에 모르니깐, 새로운 비밀번호를 입력받아서 tbl_member에 update를 시켜야 한다.
+
+※ JDK 1.8.0 291은 SMTP 오류가 있다고 보고되어서 해결방법이 리포트로 작성되었다.
+
+▶ '인증하기'(#btnConfirmCode) 버튼을 클릭하면 input#input_confirmCode에 입력한 value를 가지고가서 session에 저장된 인증코드와 비교한다.
+==> 사용자가 입력한 인증코드를 post 방식으로 Action에 전송해줘야 한다.
+==> <form name="pwdFindFrm"> 태그는 아이디, 이메일, 인증코드까지 보내기 때문에 불필요한게 많아서 사용하지 않는다.
+
+그래서 아래에 hidden으로 새로운 폼태그를 만든다.
+==> <form name="verifyCertificationFrm">
+==> 폼태그 안에 인풋태그에는 사용자가 입력한 인증코드를 value로 넣는다.
+
+인증코드만 전송해야하는게 아니라, 해당 유저의 아이디도 같이 보내줘야 한다.
+==> 그래야 해당 회원의 암호를 update 할 수 있다.
+
+■ VerifyCertificationAction.java
+
+1. 인증코드가 틀렸는지 맞았는지 확인을 한다.
+2. 입력받은 userid의 새암호를 받아서 tbl_member에 update를 해준다.
+
+3. 유저가 입력한 아이디와 인증코드를 request에서 꺼내온다.
+4. 세션에 담아둔 발급한 인증코드를 꺼내온다.
+
+★ 세션에 담아둔 값을 꺼내올 땐 getAttribute, 리턴타입이 object이니깐 casting을 해줘야 한다.
+==> String certificationCode = (String) session.getAttribute("certificationCode");
+
+▶ 이제 유저가 입력한 인증코드와 세션에 있는 인증코드를 비교한다.
+틀리면 ==> alert ==> request.getContextPath()+"/login/pwdFind.up"
+맞다면 ==> alert ==> 비밀번호 변경 페이지(request.getContextPath()+"/login/pwdUpdateEnd.up?userid="+userid)
+
+★ 인증코드가 맞는지 틀린지 확인을 다 했으니 반드시 세션에 저장된 인증코드를 삭제해줘야 한다.
+
+▶ 첫번째 방법 : 세션을 그대로 존재하게 끔 해두고 세션에 저장되어진 어떤 값(지금은 로그인 되어진 회원객체)을 삭제하기
+session.removeAttribute("loginuser");
+		
+▶ 두번째 방법 : WAS 메모리 상에서 세션을 아예 삭제해버리기
+session.invalidate();
+
+■ PwdUpdateEndAction.java
+
+인증코드를 맞게 입력한 경우 GET 방식으로 userid를 이곳으로 전송한다.
+
+새로운 비밀번호를 받을 폼을 출력한다.
+
+POST 방식으로 해당 클래스파일에 왔다면 새로운 암호를 클릭하고 '암호변경하기'를 클릭한 경우이다.
+
+GET 방식으로 해당 클래스파일에 왔다면 이제 새로운 암호를 클릭하도록 폼태그가 있는 View로 보내준다.
+==> pwdUpdateEnd.jsp
+==> 폼태그를 만들고 새로운 암호를 입력하게 한다.
+==> 암호를 입력하고 '변경하기' 버튼을 누르면 userid, 새로운 비밀번호를 다시 PwdUpdateEndAction.java에 POST로 보내준다.
+
+■ pwdUpdateEnd.jsp
+
+▶ View페이지에서는 하단에 method가 get이면 변경하기 버튼을, post이면 결과창을 띄워준다.
+
+입력받은 암호를 정규표현식으로 돌려줘야 한다.
+
+그후에 암호와 암호확인과 같은지 다른지 확인해야 한다.
+
+1. 암호가 정규표현식에 맞지 않는 경우
+2. 정규표현식은 맞으나 암호확인과 틀린경우
+3. 정규표현식도 맞고, 암호확인과 똑같은 경우
+
+■ PwdUpdateEndAction.java
+
+DAO에 입력한 pwd와 userid를 넘겨서 update를 돌리게 한다.
+==> DAO에서 암호를 바꿀때는 암호변경날짜도 바꿔줘야 한다.
+
+String sql = update tbl_member set pwd = ?, lastpwdchangedate = sysdate where userid = ? 
+
+int result를 받아와서 다시 view 페이지로 넘긴다.
+
+■ pwdUpdateEnd.jsp
+
+<c:if test="${requestScope.method == 'POST' && requestScope.n == 1}">
+
+POST 방식이면서 SQL문의 result가 1이면 결과창을 출력해준다.
+
+====================================================================================
+
+[ 아이디 저장 ] 
+
+Local Storage를 이용한다.
+
+아이디 저장 체크박스에 체크를 하면 Local Storage에 저장,
+체크박스 체크를 해제하면 Local Storage에서 삭제
+
+이벤트는 로그인을 할 때 발생해야 한다. ==> goLogin( ) 
+
+로컬스토리지 ==> 삭제하기 전까지 영구적
+세션스토리지 ==> 브라우저가 종료되면 사라진다.
+
+※ Key가 동일하기 때문에 다른 아이디로 아이디저장을 체크하면 덮어씌워진다.
+
+아이디 저장을 체크하고 로그인을 하면 ==> localStorage.setItme("key", value);
+아이디 저장을 체크해제하고 로그인을 하면 ==> localStorage.removeItem("key");
+
+문서가 로딩되면 다음과 같이 작동되도록 기술한다.
+
+var loginUserid = localStorage.getItem("saveid");
+		
+if(loginUserid != null) { // 로컬스토리지가 비어있지 않다면
+   $("input#loginUserid").val(loginUserid); // 아이디칸에 로컬스토리지에 저장된 값을 넣어주고
+   $("input:checkbox[id=saveid]").prop("checked",true); // 아이디 저장에 체크표시
+}
+
+====================================================================================
+
+[ 코인충전 ]
+
+선충전 --> 구매시 차감
+
+제품마다 결제하기 링크를 걸어두면 된다. ( 링크는 동일함 )
+
+이벤트처리는 login.jsp
+
+■ login.jsp
+
+goCoinPurchaseTypeChoice( ) 함수호출
+
+<a> 태그에서 자바스크립트 함수 호출은 <a href="javascript:goCoinPurchaseTypeChoice( )"> 식으로 한다.
+
+코인충전버튼 클릭시 goCoinPurchaseTypeChoice( ) 함수 실행
+==> 누가 로그인했는지 정보를 보내줌 (로그인정보는 session에 저장해주고 있다)
+==> 해당 함수는 파라미터로 로그인한 유저의 아이디를 보내준다.
+==> 아이디를 알아야 누구에게 포인트를 충전시켜줄지 알 수 있기 때문
+
+★ 결제같은 경우에는 반드시 로그인을 해야하며 POST 방식의 접근만 허용시켜야 한다.
+
+결제는 외부API(IAMPORT)를 사용한다.
+
+▶ 코인충전 버튼 클릭시 팝업창을 띄운다. 
+
+로그아웃 상태에서 GET방식으로 들어오려하면 막아야 한다.
+
+▶ 로그인을 해야만 하는 작업이 앞으로 많을테니(장바구니, 결제하기 등등) 공통적으로 만들어서 끌어다 쓰게 한다.
+==> 부모클래스에 만들어 준다.
+
+■ CoinPurchaseTypeChoiceAction.java
+
+★ 코인충전버튼을 누르려면 전제조건은 먼저 로그인을 해야 하는 것이다.
+==> 로그인을 해야만 코인충전버튼이 보이며, 로그인을 하면 반드시 세션에 로그인정보가 저장된다.
+
+부모 클래스에 세션에서 로그인 정보를 가져다가 로그인 유무를 검사하게 해준다.
+
+■ AbstractController.java
+
+세션에서 로그인정보를 가져다가 로그인 유무를 검사해서 true / false를 리턴해주는 메소드 생성
+public boolean checkLogin(HttpServletRequest request)
+
+■ CoinPurchaseTypeChoiceAction.java
+
+로그인을 했다면 이제 get방식으로 전송된 아이디와 현재 session에 저장된 로그인 정보를 비교해서 같은 아이디인지 확인한다.
+
+public boolean checkLogin(HttpServletRequest request) == true 이라면....
+
+▶ GET 방식으로 전송된 userid와 세션에 저장된 로그인한 사람의 아이디를 비교한다.
+
+1. loginuser.getUserid().equals(userid) 이면 결제처리 
+2. 아니라면 경고문구 출력
+
+====================================================================================
+
+오후수업 
+
+※ Github 내일 교육예정
+
+-----------------------------------------------------------------------------------------
+세미프로젝트 - 쇼핑몰 만들기
+-----------------------------------------------------------------------------------------
+1단계
+-----------------------------------------------------------------------------------------
+▶ 팀장 뽑기: 송동준 님
+
+▶ 주제 정하기: 신발
+
+▶ 벤치마킹 사이트 잡기
+- 로맨틱무브(http://romanticmove.com)
+- 탬플릿(https://themewagon.com/themes/free-bootstrap-4-html5-e-commerce-website-template-liquorstore/)
+- 미리캔버스(https://www.miricanvas.com/)
+
+▶ 업무 분담 나누기
+	- HTML 또는 JSP 설계
+	- CSS & 디자인
+	- 기능 구현
+	- DB 구현
+
+▶ 기능 
+
+
+
+
+
+-----------------------------------------------------------------------------------------
+2단계 
+-----------------------------------------------------------------------------------------
+▶ DB모델링(eXERD)
+-----------------------------------------------------------------------------------------
+3단계
+-----------------------------------------------------------------------------------------
+▶ 개별코딩
+-----------------------------------------------------------------------------------------

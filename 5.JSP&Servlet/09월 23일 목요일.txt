@@ -1,0 +1,306 @@
+09월 23일 오전수업
+
+★ 지금까지 배운거 정리하기(java -> oracle -> HTML -> css -> javascript -> jquery -> ajax -> jsp&servlet -> MVC)
+ 
+[ 아이디 중복검사 ]
+- 이미 있는 아이디로 회원가입을 하려하면 메시지를 띄워야 한다.
+
+■ MemberRegisterAction.java 
+이미 데이터베이스에 있는 정보로 회원가입을 하려하면 SQL구문오류 메시지가 아니라, 중복된 값이라고 띄워야 한다.
+아이디가 중복됐으면 다시 처음부터 해야한다.
+
+아이디 중복검사하기 클릭이벤트에서 if(jsonObj.isExists) {} 구문에 b_flagIdDuplicateClick = false; 구문을 추가한다.
+
+아이디 중복검사여부가 false여서, submit 함수인 goRegister( )에서 밑으로 떨어지지 않아서 submit이 안된다.
+
+※ 아이디를 올바르게 썻다가 --> 중복된 아이디를 입력한 경우
+사용가능한 아이디를 입력했으면 그 다음에 편집이 불가능하게 인풋태그를 readOnly로 바꿔버린다.
+
+// 또는
+
+※ 인풋태그의 값이 바뀌면 무조건 중복확인을 하게 한다.
+
+====================================================================================
+
+[ 이메일 중복검사 ]
+
+■ EmailDuplicateCheckAction.java
+
+아이디 중복검사와 비슷하다.
+
+1. request로 ajax에서 전송한 이메일입력값을 받아온다.
+2. DAO 객체생성
+3. mdao.emailDuplicateCheck(email) 메소드를 호출한다. 
+- boolean값을 리턴한다. 이미 존재하는 이메일이면 true, 존재하지 않는 이메일이면 false
+4. 이메일은 현재 DB에서 암호화되어있으니, where 절에 email을 넣을때도 평문이 아닌 암호화시켜서 보내줘야 한다.
+- "seokj@gmail.com" ==> aes.encrypt("seokj@gmail.com") ==> ZcP4DfL7Voac4wwe6pNyRA==
+5. Action.java에서 JSON 객체를 서블릿인 FrontController로 보내준다.
+- viewpage path로 jsonview.jsp를 설정해준다.
+- view 페이지(jsonview.jsp)에는 <!-- --> 주석문이 있으면 오류가 난다, 주석문을 달거면 <%-- --%>을 사용해야 한다.
+6. email 확인 페이지에서 get방식으로 URL을 넣고 출력되는지를 확인하고선, EmailDuplicateCheckAction.java에서 post 방식만 받도록 if문을 넣어준다.
+
+※ 이메일을 올바르게 썻다가 --> 중복된 이메일을 입력한 경우
+사용가능한 이메일을 입력했으면 그 다음에 편집이 불가능하게 인풋태그를 readOnly로 바꿔버린다.
+
+// 또는
+
+※ 인풋태그의 값이 바뀌면 무조건 중복확인을 하게 한다.
+
+====================================================================================
+
+[ 로그인 ]
+
+■ header.jsp
+
+홈이든 회원가입 페이지든 로그인이 나와야 한다 ==> header.jsp에 만들어야 한다.
+
+직접 header.jsp에 쳐도 괜찮지만, 코드 줄이 길어서 보기 안좋으니 include로 불러온다.
+==> 표준액션이 아닌 지시어 형식으로 넣는다.
+==> <%@ include file="/WEB-INF/login/login.jsp" %>
+==> 파일 전체를 끼어넣는 것이다.
+
+
+■ login.jsp
+
+이미 header.jsp에는 HTML태그가 모두 다 나와져있으니, 인클루드 파일에서는 HTML 태그를 모두 삭제한다.
+
+아이디찾기/비밀번호찾기는 modal
+
+아이디와 비밀번호를 입력하고 로그인버튼을 누르면(onclick) 폼태그(아이디, 비밀번호)를 전송한다.
+
+▶ 로그인 처리 구현 --> 아이디찾기/비밀번호찾기 구현 --> 자동로그인 구현
+
+[ 로그인 처리 ] 
+
+엔터든, 로그인버튼 클릭이든 이벤트가 발생해야 한다.
+==> $("button#btnSubmit").click(function(){})
+==> $("input#loginPwd").bind("keyup",function(event){ 
+        if(event.keyCode == 13){ } }); 
+
+★ keyCode == 13은 엔터키이다.
+
+두 곳 모두 goLogin( ); 함수를 호출한다.
+
+goLogin( );은 아이디와 비밀번호가 빈칸인지 아닌지 확인하고, action / method 를 설정하고 submit해준다.
+
+■ LoginAction.java
+
+POST 방식이 아니라면 쫓아낸다.
+==> message와 loc를 설정하고 msg.jsp로 보낸다.
+==> 또한 return을 써서 execute( ) 메소드를 종료시킨다.
+
+POST 방식으로 넘어왔다면 form 태그에서 input의 name으로 request.getParameter( )를 해준다.
+
+DB에 접근하는데, loginhistory 테이블에는 접속한 IP, 로그인날짜를 넣어준다.
+
+▶ Client의 IP주소를 아는 법은? 
+request.getRemoteAddr();
+==> 가끔 몇몇 PC의 IP주소를 못 알아오는 경우가 있다.
+==> C:\NCS\workspace(jsp)\MyMVC\WebContent\JSP 파일을 실행시켰을 때 IP 주소가 제대로 출력되기위한 방법.txt 참조할 것
+
+로그인이 성공했을때만 loginhistory 테이블에 insert하고, 실패했으면 insert X
+
+HashMap으로 userid, pwd, clientip를 넘긴다.
+==> DAO로 이동한다.
+
+MemberVO loginuser = mdao.selectOneMember(paraMap);
+
+■ MemberDAO
+
+먼저 select where로 그런 사람이 있는지 없는지 확인한다.
+
+// 입력받은 paraMap 을 가지고 한 명의 회원정보를 리턴시켜주는 메소드(로그인 처리)
+MemberVO selectOneMember(Map<String, String> paraMap) throws SQLException;
+
+단순하게 아이디가 있는지 없는지가 아닌, 로그인한지 얼마나 됐는지(휴면인지 아닌지)도 알아와야한다.
+
+또한 암호를 바꾼지 얼마나 되었는지 알아오고, 로그인은 일단 해주고 암호를 바꾼지 오래됐다면 팝업창을 띄워서 암호를 바꾸라고 안내한다.
+
+휴면기준 - 1년동안 로그인 X
+암호변경 - 3개월동안 비번변경X
+
+그리고 tbl_member에서 status가 0(탈퇴)이라면 로그인 X
+
+▶ 나중에 정보변경도 해야하니깐, 로그인을 하면 select에서 모든컬럼을 다 가져와서 MemberVO에 넣어준다.
+==> 정보변경할때도 selectOneMember( ) 메소드를 호출하도록 한다.
+==> 날짜는 다시 정보수정 View에서 보여줘야하니 쪼개서 받는다.
+==> 패스워드변경일자는 months_between으로 현재날짜와 뺀 다음에 trunc로 개월수만 받아온다.
+▶ 만약 3 이상이면 비밀번호 바꾸라고 안내한다.
+
+또한 tbl_loginhistory에서 가장 마지막 로그인일자를 받아와야한다.
+==> 하루에 여러번 로그인할 수 있으니 가장 최근 로그인일자를 가져오려면 max(logindate)로 받는다.
+==> 또한 months_between, trunc로 개월수만 받아온다.
+▶ 만약 12이상이면 휴면처리
+
+▶ 이 두 테이블은 어차피 1행씩만 나오기 때문에, CROSS JOIN을 해도 1*1이여서 1개 행만 나온다.
+==> 즉 컬럼과 컬럼만 붙여짐
+
+▶ 만약에 가입하고 한 번도 로그인을 안했다면 lastlogingap이 null이 나온다.
+==> NVL(lastlogingap, months_between(sysdate, registerday) AS lastlogingap 
+==> 그러면 다음과 같이 NVL로 처리를해서 오늘날짜 - 가입날짜로 처리를 한다.
+==> 즉, 가입한 날짜를 마지막 로그인날짜로 보는 것이다.
+
+★ 위치홀더를 잡을때 입력한 비밀번호는 평문이니, Sha256으로 암호화해서 DB에 보내줘야 한다.
+==> pstmt.setString(2, Sha256.encrypt(paraMap.get("pwd")));
+
+★ DB에서 정보를 받아와서 이메일과 핸드폰번호를 MemberVO에 집어넣어줄때도 AES-256으로 암호화했으니, 복호화해줘야 한다.
+
+▶ 만약 암호변경일자가 3개월 이상이면 member.setRequirePwdChange(true); 으로 암호 변경이 필요하다고 설정해준다.
+==> 만약 requirePwdChange가 true이면 로그인시 암호를 변경해라는 alert 를 띄우도록 할때 사용한다.
+==> 아니면 default가 false여서 딱히 건드릴 필요없다.
+
+▶ 만약 마지막로그인일자가 현재시각으로부터 12개월 이상이면 휴면처리를 해야한다.
+MemberVO에서 idle 컬럼을 변경해준다.
+==> 값을 안주면 default 0(활동중)
+==> 12 이상이면 1(휴면중)을 준다.
+
+또한 tbl_member 테이블에서 idle 컬럼의 값도 1로 바꿔준다.
+sql = " update tbl_member set idle = 1 "
+     + " where userid = ? ";
+pstmt = conn.prepareStatement(sql);
+pstmt.setString(1, paraMap.get("userid"));
+
+====================================================================================
+
+09월 23일 오후수업
+
+로그인을 했으니, 이제 로그인히스토리 테이블에도 insert를 해준다.
+==> 조건은 idle이 1이 아니여야 한다. (휴면계정이 아니여야 한다)
+
+휴면계정이 아니면 정상적으로 로그인이니, 로그인히스토리에도 기록을 넣어주고,
+만약에 휴면계정이라면 처리를 해준다.
+==> Action.java에서 로그인성공했는데, 휴면계정이면 msg.jsp로 보내서 경고메시지를 띄워준다.
+==> 원래는 메시지를 띄워주고 휴면을 풀어주는 페이지로 보내줘야 하는데, 시간상 index.up으로 보낸다.
+
+▶ 항상 뭔가 실패하면 msg.jsp로 보내서 어떤 오류인지 message 변수로 띄워준다.
+
+▶ 장바구니, 주문내역, 게시판글쓰기 클래스들은 모두 다 다르지만, 모든 클래스가 userid를 써야한다.
+==> request를 쓰거나, session을 쓴다.
+
+====================================================================================
+
+[ 세션 ]
+
+■ LoginAction.java
+
+★ 세션과 Local Storage, Session Storage는 다르다.
+==> Storage는 Web Server가 아니라, 클라이언트(자기PC)의 disk를 말한다.
+==> 이름만 같을뿐이다.
+
+★ 세션은 클라이언트 컴퓨터 웹브라우저당 1개씩 생성되어진다.
+==> A PC에서 크롬과 엣지로 동일한 WAS에 접속하면, 세션이 총 2개 만들어지는 것이다.
+==> 브라우저는 WAS와 클라이언트간에 정보를 주고받는 통로이다.
+
+▶ 세션이라는 저장 영역에 loginuser를 저장시켜두면 Command.properties에 기술되어진 모든 클래스에서 해당 객체를 사용할 수 있는 것이다.
+==> 그러므로 어떤 정보를 여러 클래스 또는 여러 JSP 페이지에서 공통적으로 사용하고자 한다라면 세션에 저장해야 한다.
+
+로그인을 성공했다면, 세션을 불러와서 그 회원의 정보를 저장시켜둔다.
+==> HttpSession session = request.getSession();
+==> session.setAttribute("loginuser", loginuser);
+
+session.setAttribute("loginuser", loginuser);
+==> 저장시킬 데이터는 Object 타입이고, 키값은 String 이다.
+
+▶ 암호변경한지 3개월 이상이면 메시지를 띄워준다.
+==> 또한 마찬가지로 원래는 비밀번호 변경 페이지로 보내줘야 하지만, 시간상 index.up으로
+==> 세미할때 휴면계정 해제, 비밀번호 변경 페이지로 보내도록 구현해야 한다.
+
+▶ 로그인이 되어지면 login.jsp에서 로그인 폼태그가 사라지고, 누구로 로그인이 되었다는 것을 표시해줘야 한다.
+
+※ add_months(날짜컬럼, 더하거나 뺄 값)
+※ months_between(기준날짜, 비교날짜)
+
+
+로그인을 안했으면 폼태그가 나오고, 로그인을 했으면 폼태그말고 누가 로그인했는지 표시해야함
+==> <c:if test=""> 를 사용한다.
+
+★ request 영역 공유는 Action.java에서 포워드로 login.jsp로 보내줘야 view 페이지에서도 request 영역에 저장된 값을 꺼내서 쓸 수 있다. 허나, 세션에 넣어둔 값은 포워드를 안해도 어떤 jsp나 클래스든 모두 꺼내서 쓸 수 있다.
+==> ${sessionScope.loginuser}
+
+★★★ 세션은 브라우저당 한 개씩 배정되는 것을 기억할 것
+==> WAS를 키고, 브라우저로 페이지에 연결하는 순간 해당 웹브라우저를 위한 세션을 RAM에 만들어준다.
+==> 또한 다른 브라우저로 연결해도 또 그 웹브라우저를 위한 세션을 만들어줌
+==> 언제 끊어지는가 하면, 명령어로 끊던가 or 웹브라우저를 끄면 자동적으로 세션이 소멸됨 
+       --> 메모리에서 휘발됨
+
+sessionScope.loginuser == MemberVO와 같음 
+--> 그래서 키값으로 getter 다음에 글자를 쓰면 해당 객체에 저장된 필드값이 나옴
+
+====================================================================================
+
+[ 로그아웃 처리하기 ]
+
+■ LogoutAction.java	
+
+HttpSession session = request.getSession( ); // 세션불러오기
+
+// 첫번째 방법 : 세션을 그대로 존재하게 끔 해두고 세션에 저장되어진 어떤 값(지금은 로그인 되어진 회원객체)을 삭제하기
+session.removeAttribute("loginuser");
+
+// 두번째 방법 : WAS 메모리 상에서 세션을 아예 삭제해버리기 
+session.invalidate();
+
+※ 새로운 크롬을 켜서 웹페이지에 접속해도 여전히 로그인 되어 있다.
+==> 세션은 브라우저당 1개
+
+★ 네이버도 마찬가지로 로그인을 session으로 처리를 한다.
+
+▶ request는 특정 페이지만 꺼내볼 수 있다.(forward로 연결된 페이지들끼리)
+▶ session은 모든 페이지가 다 꺼내볼 수 있다.
+
+====================================================================================
+
+[ ★★★ request와 session의 차이 ]
+
+<c:set var="name1" value="쌍용강북" scope="page" />
+▶ scope="page"는 해당 태그가 적혀진 페이지에서만 저장하겠다는 뜻이다.
+▶ scope="" 를 생략하면 자동으로 scope="page" 가 기본값으로 들어간다.
+
+scope="page"    로 선언된 변수의 사용범위는 선언되어진 jsp 파일내에서만 사용되어진다.
+scope="request" 로 선언된 변수의 사용범위는 선언되어진 jsp 파일 및 include 되어진 파일내에서도 사용되어진다.
+scope="session" 로 선언된 변수의 사용범위는 모든 jsp 파일내에서 사용되어진다.
+
+변수의 삭제는 <c:remove var="변수이름" scope="영역"/> scope 생략시 모든 영역의 동일한 변수 이름 삭제 됨.
+
+※ 지시어 방식 include는 파일째로 넣어버리기 때문에 page여도 다른 페이지에서도 나옴
+
+====================================================================================
+
+[ 아이디찾기 / 비번찾기 ]
+
+모달본문은 iframe 으로 처리를 한다.
+==> 내용이 많아서 따로 만든 것을 불러오기 하는 것이다.
+
+▶ iframe이란 inline frame의 약자입니다.
+iframe 요소를 이용하면 해당 웹 페이지 안에 어떠한 제한 없이 또 다른 하나의 웹 페이지를 삽입할 수 있습니다.
+
+▶ 아이디찾기 
+1. 이름, 이메일 입력
+2. DB에서 검색
+3. select where로 검색해서 해당 아이디를 띄워줌
+
+▶ 비밀번호찾기
+1. 아이디, 이메일 입력
+2. DB에서 검색
+3. (있으면) 해당 이메일로 인증코드 발송
+4. 인증코드가 올바르면 비밀번호 변경 페이지 띄워줌
+5. update로 비밀번호 바꾸기
+
+■ IdFindAction.java
+- forward할 viewPage 설정 ==> /WEB-INF/login/idFind.jsp
+
+■ idFind.jsp
+- 폼태그 생성하기(성명, 이메일)
+==> login.jsp에 불려갈 것인데, 이미 HTML태그들이 다 있으니깐 HTML 기본태그들은 모두 지운다.(중복이 발생해서 오류가 남)
+
+idFind.jsp은 header.jsp / footer.jsp가 없는 독립적인 페이지여서 또 따로 불러와줘야 한다.
+==> js, jquery, bootstrap등 다시 불러와야함
+
+
+
+★★★
+세미프로젝트는 6명임 
+==> 조별로 차례대로 등원
+
+
+

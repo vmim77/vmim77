@@ -1,0 +1,301 @@
+09월 15일 수요일 오전수업
+
+[ 신규사원 정보입력 ]
+
+- 모든 정보를 입력하고 email중복검사를 누르지 않으면 submit이 보내지지 않음
+- email은 DB에서 Unique 제약
+
+▶ email중복검사를 했는지 안했는지 확인하기
+
+- $(document).ready(function( ){ }) 에 변수를 선언해서 중복검사를 눌렀나 안눌렀나를 확인시켜서 ready 괄호 안에서 모두 사용하게 한다.
+- var b_isClickEmailCheck = false;
+
+▶ email중복검사 
+
+- DB에 접근해서 확인해야 한다.
+- DB 넘기기 전에 정규표현식 검사 
+==> var regExp = /^[0-9a-zA-Z]([-_\.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_\.]?[0-9a-zA-Z])*\.[a-zA-Z]{2,3}$/i; 
+- 정규표현식에 맞으면 ajax로 DB에 넣어서 중복검사
+- 서블릿에 넘길땐 JSON으로 보낸다.
+- rs.next( )를 이용하여 중복여부를 검사한다.
+==> rs.next( )는 리턴타입이 boolean인데, 행이 있으면 true, 없으면 false 이다.
+==> 그래서 rs.next( ) 가 true면 isUse를 false로 줘서 중복임을 알리고, rs.next( ) 가 false면 isUse에 true를 줘서 중복이 아님을 알린다.
+
+return을 넣는건 이벤트를 끝낸다는 것이다. 중복된 이메일을 넣었으면 .val("")만 해주면 알아서 submit이 불가능하게 submit 이벤트를 처리해놨으니, ajax의 success 콜백함수에서는 굳이 return을 쓸 필요가 없다.
+
+▶ GSON이란 데이터타입이 따로 있는 것이 아니다. JSON과 XML이 데이터타입임
+==> GSON을 사용하면 Java 객체를 JS 객체로 또는 JS 객체를 Java 객체로 변환할 때 사용하는 것이다.
+
+▶ 모든 정규식표현과 email중복검사까지 마쳤다면 DB를 조회해서 사원목록에 출력시켜줘야 한다.
+==> 일단 문서가 실행되면 바로 모든 사원정보 출력해주기를 하고, 신규사원정보입력을 하면 그 함수를 또 호출해준다.
+- select where이 아닌, select 여서 전송해줄 ajax에서 data는 없다.
+- 사원명, 직위, 연락처, email은 목록에서 보여지지만 특정사원을 클릭해야 생년월일, 나이가 나오게 한다.
+- 그래서 전체 사원목록에서는 DAO에서 setter를 사원명/직위/연락처/email만 한다.
+
+▶ DAO에서 리턴값을 받와서 처리한다.
+
+json이라면 결과물이 복수개면 jsonArr(배열)과 jobj(객체)를 만들어서 처리한다.
+==> List의 결과물을 반복문으로 꺼내서 jsobj에 넣어준다.
+==> 결과물이 다 넣어진 jsobj를 jsonArr에 넣어준다.
+==> 그리고 jsonArr을 .toString( )으로 문자열로 만든다.
+==> 이후 response 객체로 출력
+
+GSON은 이런 작업자체를 생략시킬 수 있다.
+▶ gson.toJson(객체);
+==> 저 메소드에 객체를 넣으면 JSON 형식의 문자열로 바꾸고 .toString( )까지 다 해준다.
+==> .toJson( ) 은 리턴타입이 스트링임, 이걸 response로 찍기만 하면 끝이다.
+
+★ 키값은 자바객체 VO의 필드이름이 자동적으로 키값이 되고, value값은 우리가 DB에 insert 해준 값이다.
+
+▶ GSON으로 구해온 값을 success의 콜백함수로 테이블 형태로 찍어준다.
+==> <div id="employeeList></div> 에 결과값을 넣는다.
+
+▶ 맨위에 있는 사원을 자동적으로 사원개별상세정보에 나오게 해준다.
+==> func_empDetail(item.email);
+==> 한 사람만 select where을 돌려준다.
+==> where 조건절에는 email이 Unique이니 email이 들어간다.
+
+1. select where 서블릿 생성
+2. Employee empvo 에 특정직원의 정보를 담아온다.
+3. out.print(new Gson().toJson(empvo)); 으로 웹브라우저에 출력
+==> out.print(new Gson().toJson(empvo)); 이렇게 GSON을 사용하면 더욱더 줄일 수 있다.
+
+원래는 
+Gson gson = new Gson();
+String json = gson.toJson(empList);
+out.print(json);
+이렇게 치는데, 더욱 줄이면 편해진다.
+
+▶ GSON으로 DB정보를 받아온 DAO 메소드의 리턴값(EmployeeVO empvo)을 JSON 형식으로 바꿀때 키값은 자동으로 해당 객체(empvo)의 필드명(ename, jik, tel, email, birthday, age...)이 키값이 된다.
+
+★ setAge( )를 만들지 않은 이유는?
+예시로 1990년인데 setAge( )로 나이를 10살로 지정하면 데이터가 꼬여져 버린다. 
+그래서 통일성을 높이기 위해서 setBirthday( )에서 생년월일을 구하면 나이까지 구하게 해버린 것이다.
+--> 추상화 -- 필요한 것만 만든다. ( 생년월일만 알면 성별 / 나이 알 수 있다. )
+
+====================================================================================
+
+09월 15일 오후수업
+
+▶ 사원목록에서 특정사원 클릭시(onclick) 사원개별상세정보에 표시하기
+
+★ tr.empInfo 는 스크립트에서 기술된 코드이기 때문에, $(document).on("이벤트","선택자",function(){}) 으로 잡아야 한다.
+- mouseover 하면 addClass로 empcss를 넣어주고, mouseout하면 empcss를 removeClass 해준다.
+
+- 어제는 event.target이여서 parent( )로 올라갔다가 다시 찾았어야 했는데, 오늘은 아예 tr을 선택해버려서 바로 이메일이 있는 자식태그를 찾으면 된다.
+
+$(document).on("click","tr.empInfo",function(){
+     var email =$(this).find("td:last-child").text();
+     // alert(email);
+     func_empDetail(email); // 특정 사원을 찾아서 오른쪽 섹션에 표시해주는 함수
+});
+
+====================================================================================
+
+▶ 신규직원 정보입력 후 유효성검사하고 insert 하기 
+
+var employee = {"ename":$("input#ename").val()
+                     ,"jik":$("select#jik").val()
+                     ,"tel":$("input#tel").val()
+                     ,"email":$("input#email").val()
+                     ,"birthday":$("input#birthday").val()};
+
+유효성검사를 거쳐서 아래까지 내려온 값들을 다음과 같이 employee 변수에 객체형식으로 담아준다.
+
+▶ 이미 employee 변수는 자바스크립트의 객체 형태여서 JSON 문자열 형태로 바꿔서 서블릿에 보낸 다음에, 다시 거기서 Java Object 형태인 EmployeeVO 로 바꾼 다음에 사용한다.
+==> 소스가 아주 간결해진다.
+
+▶ 자바스크립트의 내장객체 JSON을 이용하여 처리한다.
+==> JSON.stringify(자바스크립트객체);
+==> 얘는 자바스크립트 객체를 JSON 문자열로 바꿔준다.
+
+▶ 반대는  JSON.parse(text); 로서 JSON 형식으로 되어진 문자열을 자바스크립트 객체로 변환해주는 것이다.
+
+
+이제 JSON으로 되어진 문자열 strEmployee을 ajax로 서블릿에 보내줘서 insert를 시키게 한다.
+
+insert이니 ajax에서 type은 post로 한다.
+insert용이니깐 dataType은 필요없다.
+
+서블릿에서 DAO 메소드를 부르는데 insert 메소드는 파라미터로 VO를 넘겨줘야 한다.
+==> 근데 data 전송으로 넘어온 것은 String인데 JSON형식 String이다.
+==> 이럴때도 GSON을 사용하면 편하다.
+
+▶ gson.fromJson(json, classOfT) 을 사용하면 JSON --> Java Object가 가능하다.
+==> EmployeeVO empvo = gson.fromJson(employee, EmployeeVO.class);
+==> JSON 형식의 문자열인 employee 를 EmployeeVO.class 형태로 바꿔라
+
+setEname("은길영");
+setJik("사장");
+setTel("01023456789");
+setEmail("sliver@gmail.com");
+setBirthday("19981020");
+으로 되어진 Employee empvo 객체를 생성해주는 것이다.
+자기가 알아서 키값을 보고 setter를 찾아가서 value 값을 넣어준다.
+
+▶ insert 완료되면 전체목록 메소드 다시 호출하기
+insert용 ajax의 success 콜백함수에 전체사원조회하기 메소드를 넣어둔다. 
+
+★★★ 중요 Reset은 form태그 안에서만 먹힙니다.
+document.empFrm.reset(); // 신규사원 입력 성공하면 입력한 값들 다 지워준다.
+
+
+[ 정리 ]
+DB에서 얻어온 정보를 JSON으로 바꿀 땐, 
+GSON 객체 만들고 gson.toJson(DB정보) 하면, 
+JSON 형태로 바뀐다.
+그리고 response 객체로 출력한다.
+
+이미 자바스크립트 객체타입인것은 JSON 문자열 타입으로 바꾸고, ajax에서 data에 써서 서블릿으로 전송하고, 
+서블릿에서 받아서 GSON을 이용하여 gson.fromJson을 이용하여 Java 객체로 바꿔준다.
+==> 대신에 자바스크립트 객체에서 키값은 만들때 변환하려는 Java 객체의 필드명과 동일해야 한다.
+
+====================================================================================
+
+▶ 세미프로젝트: 쇼핑몰은 9월 27일부터 3주 동안
+- 오전은 수업, 오후는 프로젝트 
+
+세미프로젝트 3주 동안하는거 끝나면 바로 Spring 들어간다.
+
+파이널은 11/1 시작할거임 (대략 3주 정도)
+
+이제 이력서에 콘솔기반 도서대여, JSP&Servlet 쇼핑몰, Spring 파이널 프로젝트 넣으면 됨
+
+====================================================================================
+
+[ MVC ]
+
+▶ MVC - 모델 / 뷰 / 컨트롤러
+ ■ 모델 -- DB
+ ■ 뷰 -- JSP 
+ ■ 컨트롤러 -- 서블릿
+
+1. 프로젝트를 새로 만들었으니 웹컨테이너를 추가해야 한다.
+==> Build path -- Add library -- Server runtime -- Apach tomcat 
+
+2. 라이브러리 추가한다.
+==> WEB-INF -- lib
+
+3. 부트스트랩 추가하기 
+==> WebContent -- bootstrap-4.6.0-dist
+
+4. JS 추가하기
+==> WebContent -- js
+
+5. images 추가하기
+==> WebContent -- images
+
+6. 필터 추가하기 -- POST용
+MyMVC -- Java Resources -- src -- my.filter -- EncodeFilter.java ( filter로 만든 것이라, 배치서술자 작성 불필요 )
+
+그 전까지는 계속 서블릿을 만들면서 했는데, 이번에는 서블릿을 딱 1개만 만들것이다. 나머지는 일반클래스로 할 것이다.
+(== Properties 기법)
+==> 실무에서 많이 쓰인다.
+
+src -- common.controller 생성
+Command.properties 생성
+
+Properties는 HashMap과 비슷하나, Properties 는 (String 키, String 밸류값)의 형태로 둘 다 String 타입이며,
+중복은 허락하지 않는다. 중복된 값을 넣으면 마지막에 넣은 값으로 덮어씌운다.
+
+Enumeration<String> en = (Enumeration<String>)prop.propertyNames();
+= 을 중심으로 왼쪽은 키값, 오른쪽은 URL
+
+====================================================================================
+
+[ Command.properties ]
+
+.properties 에서 주석문은 #주석문
+==> 한글을 쓰면 유니코드로 바뀐다.
+
+우리가 그 전까지는 ~.do를 썼었다.
+이제는 .up 을 사용한다. (★ 세미할때 .up이나 .do를 사용하면 수업자료와 혼합이 되버려서 오류가 나니깐 꼭 다른 것을 사용)
+
+/index.up 얘가 시작 페이지
+
+indexController.java 생성 -- 얘는 일반 .java 파일 (doGet이나 doPost가 없음)
+
+서블릿을 하나 만들고 앞으로 indexController 얘가 맵 이동을 다 시키도록 할 것이다.
+처음에는 어렵지만, 나중에는 번거롭게 서블릿을 안 만들어도 되서 매우 편해짐
+
+/index.up=common.controller.indexController
+      URL = 클래스명
+==> URL에 /index.up을 치면 indexController.java가 응답함
+
+★ Command.properties에서는 공백을 함부러 치면 안된다. 공백까지 다 인식을해버려서 오류가 난다.
+
+/main.up=common.controller.mainController
+==> URL에 /main.up을 치면 mainControll.java가 응답함
+
+메인컨트롤러, 인덱스컨트롤러는 서블릿이 아님을 인지한다.
+
+▶ 서블릿을 딱 1개만 만든다. ==> FrontController.java
+==> 얘는 마치 빌딩에서 프론트 역할을 하는 애임
+==> Description에 설명을 쓴다.
+==> 사용자가 웹에서 *.up 을 했을 경우 이 서블릿이 먼저 응답을 해주도록 한다.
+
+▶ Initialization parameters를 설정한다. -- 초기화 파라미터
+==> name: propertyConfig / value: C:\NCS\workspace(jsp)\MyMVC\WebContent\WEB-INF\Command.properties
+==> *.up 에 대한 클래스의 매핑파일이다.
+
+▶  URL 매핑 설정 변경
+==> *.up
+
+▶ 다음에 생성자는 체크해제하고, init를 체크해준다.
+==> 그래야만 초기화 파라미터를 세팅해주는 메소드인 init가 생성된다.
+
+value의 경로에는 이스케이프 문자인 역슬래시를 하나씩 더 넣어준다.
+value = "C:\\NCS\\workspace(jsp)\\MyMVC\\WebContent\\WEB-INF\\Command.properties"
+혹은 역슬래시를 그냥 슬래시로 바꿔도 된다.
+==> 자바는 Linux기반이라 슬래시도 인식한다.
+
+서블릿으로 클래스를 만들면 @WebServlet이여서 배치서술자에 기술할 필요X
+앞으로 *.up인 URL패턴은 FrontController 서블릿이 모두 받는다.
+
+▶ init란?
+웹브라우저 주소창에서  *.up 을 하면 FrontController 서블릿이 응대를 해오는데
+맨 처음에 자동적으로 실행되어지는 메소드가 init(ServletConfig config) 이다. 
+여기서 중요한 것은 init(ServletConfig config) 메소드는 WAS(톰캣)가 구동되어진 후
+딱 1번만 init(ServletConfig config) 메소드가 실행되어지고, 그 이후에는 실행이 되지 않는다.
+그러므로 init(ServletConfig config) 메소드에는 FrontController 서블릿이 동작해야할 환경설정을 잡아주는데 사용된다.
+
+▶ init 메소드는 WAS가 실행되면 딱 한 번만 실행된다.
+==> WAS가 구동되고 *.up URL에 접속하면 딱 한번만 init 메소드가 실행되고 다음에 또 *.up에 접속해도 다시는 실행 안된다.
+==> 그래서 환경설정에 사용한다.
+
+==> 그래서 Command.properties를 읽어오는데 사용한다.
+==> propertyConfig 를 치면 Command.properties를 읽어온다.
+
+initParams 를 읽어오려면 config(init 파라미터 이름).getInitParameter("propertyConfig"); 을 한다.
+==> 리턴타입 String
+==> FileInputStream으로 해당 경로의 파일에서 내용물을 읽어온다.
+
+FileInputStream fis = null;
+		
+try {
+   fis = new FileInputStream(props);
+} catch (FileNotFoundException e) {
+   e.printStackTrace();
+}
+
+★ .properties 확장자는 =을 중심으로 왼편이 키값, 오른편이 벨류값이다.
+// Properties 는 Collection 중 HashMap 계열중의  하나로써
+// "key","value"으로 이루어져 있는것이다.
+// 그런데 중요한 것은 Properties 는 key도 String 타입이고, value도 String 타입만 가능하다는 것이다.
+// key는 중복을 허락하지 않는다. value 값을 얻어오기 위해서는 key값만 알면 된다.
+
+▶ pr.load(fis);
+fis의 내용물을 읽어다가 properties에 쭉 올려버린다.
+=를 기준으로 왼쪽은 키값으로 간주하고, 오른쪽은 벨류값으로 간주해서 올린다.
+
+▶ Enumeration<Object> en = pr.keys( );
+==> 키값들만 가져온다.
+
+▶ while(en.hasMoreElements( )) 에서 en.hasMoreElements( ) 는 en에 내용물이 있는지 없는지 알아온다.
+==> 그리고 en.nextElement( );로 값을 가져온다.
+
+
+▶ properties에서 value값을 알아 올때는 pr.getProperty(key); 을 쓴다.
+==> 해당 키의 벨류값을 가져온다.
+
+추후에는 command.properties에 있는 URL중 하나를 치고 들어오면, 키를 가지고가서 매핑되어진 value 값의 클래스를 불러서 그 클래스 안에서 모든 작동을 하게 한다.

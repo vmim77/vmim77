@@ -1,0 +1,183 @@
+10월 05일 화요일 수업
+
+▶ currentShowPageNo 유효성검사
+
+sizePerPage - 몇명씩 볼 것인가? ( 3 / 5 / 10 만 가능하다)
+currentShowPageNumber는 맨 처음에는 getParameter로 들어온 값이 없으면 1로 설정한다.
+
+GET방식이여서 사용자가 주소로 currentShowPageNo에 숫자가아닌 문자를 넣을 수 없도록 막아야 한다.
+또한, int의 숫자 범위를 벗어나는 숫자도 막아야 한다.
+
+try {
+	Integer.parseInt(currentShowPageNo);
+} catch (NumberFormatException e) {
+	currentShowPageNo = "1";
+}
+
+DAO에 넘기기전에 숫자형으로 바꿨는데 NumberFormatException이 발생한다면 1로 바꿔준다. (문자나 int 범위를 벗어난 값을 넣은 경우)
+
+▶ sizePerPage 유효성검사
+
+null이거나 또는 3, 5, 10이 아니면 무조건 10으로 바꿔준다.
+
+====================================================================================
+
+[ sizePerPage 이벤트처리 ]
+
+※ select 태그는 이벤트가 click이 아니라 change이다.
+
+default로 된 페이지당 회원명수를 선택한 인원수에 맞게 바꿔주어야한다.
+
+request.setAttribute("sizePerPage", sizePerPage);
+==> 검색된 회원목록을 View페이지에 보낼때 선택했던 인원수도 다시 보내주면된다.
+
+$("select#sizePerPage").val("${requestScope.sizePerPage}");
+
+====================================================================================
+
+[ 페이징처리 ]
+
+※ bootstrap --> ch01-css --> s26 참조
+
+<ul> 태그에 .pagination 클래스를
+<li> 태그에 .page-item 클래스를 추가한다.
+
+==> 안에 <li> 태그들을 이제 java에서 만들어준다.
+
+▶ 전체가 몇 페이지인지 알아야한다.
+
+1개 블럭당 10개씩 잘라서 페이지를 만든다.
+1개 페이지당 3개행 또는 5개행 또는 10개행을 보여주는데,
+만약 1개 페이지당 5개행을 보여준다라면 총 몇개 블럭이 나와야하는가?
+
+총 회원수 207명, 1개 페이지당 보여줄 회원수가 5이라면
+
+207/5 = 41.4 ==> 42(totalpage) ==> 5개블럭
+
+select ceil(count(*)/ 5) ------- 5는 가변되어야 함 (3, 5, 10)
+from tbl_member
+where userid != 'admin';
+
+-----------------------------------------------------------------------------------------------------------
+select ceil(count(*)/to_number('3')), ceil(count(*)/to_number('5')), ceil(count(*)/to_number('10')) 
+from tbl_member
+where userid != 'admin';
+
+select ceil(count(*)/'3'), ceil(count(*)/'5'), ceil(count(*)/'10') 
+from tbl_member
+where userid != 'admin';
+
+★ 둘은 똑같다. 오라클이 알아서 숫자모양의 문자열을 자동형변환 해준다.
+
+
+[ 페이지넘버를 이루는 공식 ]
+
+★ pageNo ==> ( (currentShowPageNo - 1)/blockSize ) * blockSize + 1
+
+pageNo는 페이지바에서 보여지는 맨 첫번째 번호
+
+blockSize는 블럭당 보여지는 페이지의 개수
+
+loop는 1부터 증가하여 1개 블럭을 이루는 페이지번호의 개수 -- 지금은 10
+
+▶1~10 사이에 어떤 것을 클릭하든 시작페이지 넘버(1페이지)는 계속 똑같아야 한다.
+==> 10번을 반복해야함
+
+pageNo ==> ( (currentShowPageNo - 1)/blockSize ) * blockSize + 1
+==> int pageNo = ( (Integer.parseInt(currentShowPageNo) - 1)/blockSize ) * blockSize + 1;
+※ 오라클은 정수 나누기 정수는 몫값만 나온다.
+
+while( !(loop > blockSize || pageNo > totalPage ) ){
+	loop++;
+	pageNo++;
+}
+
+
+▶ 만약 5명씩으로 본다면 페이지는 43이 출력되서는 안된다. 총 207명의 회원만 있기 때문에 42페이지까지만 출력되면된다.
+==> 즉 전체 페이지수를 알아와야한다.
+==> 전체 페이지수는 조건이 있냐 없냐, 몇명씩 볼거냐에 따라서 달라진다.
+
+
+▶ 페이징처리 while 반복문으로 페이징에 넣어야할 <li>를 반복해서 찍어서 보내줘야함
+==> 링크는 반복문으로 차곡차곡 증가한 자신의 pageNo로 와야한다.
+==> 또한 뒤에 GET방식으로 '현재페이지=자신의 pageNo', sizePerPage을 보내줘야한다.
+pageBar += "<li class='page-item'><a class='page-link' href='memberList.up?currentShowPageNo="+pageNo+"&sizePerPage="+sizePerPage+"'>"+pageNo+"</a></li>";
+
+▶ 또한 페이지가 이동되어도 검색타입과 검색어를 계속해서 기억시키게 해야한다.
+
+$("select#searchType").val("${requestScope.searchType}");
+$("input#searchWord").val("${requestScope.searchWord}");
+
+==> 그냥 바로 스크립트에 request에서 넘긴 검색타입과 검색어를 select와 input의 value로 넣으면 안된다.
+==> 맨 처음에는 값이 없기때문에 이상하게 나온다.
+==> 위에는 잘못된 처리이다.
+
+※ 맨 처음에 문서가 로딩되었을때는 form이 전송되지 않아서 검색타입, 검색어 등이 모두 Null인 상황이다.
+==> 폼이 전송되어야만 검색타입, 검색어, 현재페이지, 몇명씩 볼지가 Action으로 전송됨
+
+▶ http://localhost:9090/MyMVC/member/memberList.up?currentShowPageNo=1&sizePerPage=5&searchType=name&searchWord=%EC%9C%A0
+==> 이렇게 넘겨야한다.
+
+
+ http://localhost:9090/MyMVC/member/memberList.up?currentShowPageNo=1&sizePerPage=5&searchType=null&searchWord=null
+==> 근데 검색을 안하고 페이지를 넘기면 null이 된다. 즉, 검색어없이 페이지를 넘기는 경우에 대한 처리를 해줘야함
+==> 검색을 안하고봤다면 'searchType=', 'searchWord=' 식으로 되어야함
+
+			
+			if(searchType == null) {
+				searchType = "";
+			}
+			
+			if(searchWord == null) {
+				searchWord = "";
+				
+			}
+
+이런식으로 <li>를 찍기전에 바꿔줘야 한다.
+==> http://localhost:9090/MyMVC/member/memberList.up?currentShowPageNo=1&sizePerPage=10&searchType=&searchWord= 검색어도 null이 아닌 정상적으로 나온다.
+
+[ 남은 것 ]
+1. 내가 현재 누른 페이지를 표시해줘야함
+현재 내가 보는페이지가 while문에서 pageNo와 같다면 pageBar += "<li class='page-item active'><a class='page-link' href='#'>"+pageNo+"</a></li>"; 를 넣게한다.
+
+				if( pageNo == Integer.parseInt(currentShowPageNo) ) {
+					pageBar += "<li class='page-item active'><a class='page-link' href='#'>"+pageNo+"</a></li>";
+				}
+				else {
+					pageBar += "<li class='page-item'><a class='page-link' href='memberList.up?currentShowPageNo="+pageNo+"&sizePerPage="+sizePerPage+"&searchType="+searchType+"&searchWord="+searchWord+"'>"+pageNo+"</a></li>";
+				}
+
+▶ 페이지를 누를때마다 GET방식으로 Action을 계속 호출한다는 점을 생각할 것
+
+2. [맨처음][이전], [다음][마지막] 만들기
+
+마지막페이지(totalPage)일때는 [다음]버튼이 있으면 안댐
+==> 마찬가지로 [마지막]도 마지막페이지선 없어야 함
+
+
+
+
+
+
+[질문]
+마스터브랜치에 병합시킨 소스들을 자기 브랜치로 내려받는방법
+
+[답변]
+로컬 메인브랜치에서 push하면 --> 깃허브 메인브랜치로
+로컬 개인브랜치에서 push하면 --> 깃허브 개인브랜치로
+
+팀원들과 기능을 합쳐서 확인해보고 추가적으로 개발할거면 자기 로컬메인브랜치에서 해보고 진짜 다 끝나면 깃허브 메인브랜치로 push를 해주면 됨
+==> 그 전에는 자기 로컬 메인브랜치에서 개발해보면서 에러잡고 유지보수하면 됨
+==> 완성되면 그때만 깃허브 메인브랜치로 push
+
+
+※ 자기만의 깃허브 개인 브랜치로는 아무때나 push해도 됨(백업개념임)
+
+로컬 개인브랜치 --> merge --> 로컬 메인브랜치 --> push --> 깃허브 메인브랜치
+					       ↑
+			   (!!!이부분을 하기 전에는 반드시 팀원에게 얘기해야함!!!)
+
+ 
+
+
+

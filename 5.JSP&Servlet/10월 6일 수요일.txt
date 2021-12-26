@@ -1,0 +1,76 @@
+10월 06일 수업
+
+■ memberList.jsp, memberOneDetail.jsp, MmemberOneDetail.java, SmsSendAction.java
+
+▶ 회원검색에서 엔터를 쳐도 검색이 되는 이유?
+
+폼태그 내에서 전송해야할 input 태그가 만약에 1개 밖에 없을 경우에는 유효성검사가 있더라도 유효성 검사를 거치지 않고 바로 submit()을 하는 경우가 발생한다. 이것을 막아주는 방법은 input 태그를 하나 더 만들어 주면 된다. 그래서 아래와 같이 style="display: none;"을 해서 input 태그를 하나 더 만든 것이다.
+
+※ type="hidden"으로 만들면 먹히질 않는다. 반드시 display: none;으로 처리를 해줘야 한다.
+
+keyup에서 엔터키는 event.keyCode == 13 이다.
+
+-------------------------------------------------------------------------------------------------------------------
+
+[ 회원 상세정보 조회 ]
+
+▶ 회원 클릭하면 상세정보 조회
+
+탈퇴회원은 update or delete 둘 다 괜찮다.
+
+회원전체목록에서 행을 클릭하면 아이디를 따온다 --> DAO에 가서 select where을 돌려서 회원정보를 가져온다. --> view 페이지로 이동해서 처리한다.
+
+fn:substring(문자열, 시작인덱스, 끝인덱스(이전까지뽑음))
+fn:replace(문자열, 바뀔문자, 바꿔질문자)
+
+-------------------------------------------------------------------------------------------------------------------
+
+▶ 문자보내기
+
+▶ OpenAPI - coolsms
+
+API KEY: NCSCKIEW9NQW3PSC
+API SECRET: 9JW87QWSUNLWR4GHPOWOYRMP1ZPNSFVH
+
+변수.split("구분자"); -- 문자열인 변수를 구분자로 짤라서 배열로 만든다.
+변수.join("구분자"); -- 배열을 구분자로 합쳐서 한 문자열로 만든다.
+
+▶ API로 보내야할 객체들 
+
+dateObj = {"mobile":"${requestScope.mvo.mobile}", "smsContent":$("textarea#smsContent").val()};
+==> 즉시발송이면 번호와 문자내용
+
+dateObj = {"mobile":"${requestScope.mvo.mobile}",  "smsContent":$("textarea#smsContent").val(), "datetime":datetime};
+==> 예약발송이면 번호와 문자내용 예약시간
+
+결과는 바로 나와야 하니깐 ajax를 사용한다.
+==> JSON 타입으로 보내야한다.
+
+※ lib 추가해야 함
+
+Message 객체 생성, 기본생성자 파라미터는 api_key, api_secret
+
+import는 import net.nurigo.java_sdk.api.Message;
+
+리퀘스트영역에서 dataObj를 가져온다.
+※ JSON에서 데이터전송할때는 자바스크립트 객체타입으로 보내준다. {"키값","벨류값"}
+==> 자바에서는 키값을 리퀘스트 getParameter로 불러오면 된다.
+
+JSONObject jsobj = (JSONObject) coolsms.send(paraMap); // 문자보내는 메소드이다.
+// send() 는 파라미터로 항상 HashMap을 받는다.
+// 리턴타입은 JSONObject
+// ★ 얘는 반드시 json.simple로 import 해야한다.
+
+==> OpenAPI 회사인 coolsms에서 json-simpe로 코드를 개발해서 맞춰야 한다. 
+
+
+▶ JS에서 했던 타이머기능을 넣어서 인증코드 입력하기 버튼을 해당 시간이 지나면 비활성화 시키고, 다시받기를 만들어도 괜찮다.
+==> 보내는 메시지에 내용물에는 인증코드를 넣고, Session에도 저장시키면 됨
+==> 인증코드 입력하기 버튼을 누르면 session에 저장한 인증코드랑 사용자가 입력한 인증코드를 비교해서 맞으면 --> 다음 처리 진행
+
+
+★ history.back( )은 이전 이미지만 캡쳐(캐시)를 해놨다가 다시 돌려보기 때문에, 그 사이에 DB가 변동이 일어나면 반영을 못한다.
+
+
+
+

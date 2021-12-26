@@ -1,0 +1,264 @@
+09월 09일 오전수업
+
+- JSP 커스텀액션
+- 웹 + DB 합치기
+
+[ JSTL - choose ]
+
+▶ JSTL?
+Java Standard Tag Library (JSTL)
+자바에서 주고있는 태그관련 라이브러리다. ( 얘가 바로 커스텀 액션임 )
+별도의 다운로드가 필요하다.
+
+※ 커스텀액션에서 if는 else가 없다보니깐, 반대되어진 조건을 또 하나 써야한다. 하지만 else의 역할을 하는 choose가 있다.
+
+<c:set /> - 변수의 선언
+${param.jubun} - request.getParameter("jubun")와 똑같다.
+${jubun} - 변수의 호출
+
+★★★★★★★★★★ 중요!!!!! ★★★★★★★★★★
+get이나 post 방식으로 넘어온 값들은 ${param.이름} 형식으로 가져온다. (== request.getParameter("이름") )
+
+그리고 request.setAttribute("이름", "값")으로 저장한 값들은 ${requestScope.이름} 형식으로 가져온다는 사실을 기억해야 한다.
+★★★★★★★★★★ 중요!!!!! ★★★★★★★★★★
+
+▶ <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %> 얘를 써야 커스텀액션을 쓸 수 있다.
+▶ <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %> 얘를 써야 JSTL 함수를 쓸 수 있다.
+
+<c:set var="len" value="${fn:length(jubun)}" /> 함수는 이런식으로 ${fn:함수명( )} 으로 쓴다.
+
+<c:if test="${len eq 0 }"></c:if> 함수의 조건도 항상 ${  } 안에 쓴다.
+※ eq: 같다(==), ne: 다르다(!=)
+
+▶ <c:choose></c:choose> 가 if else와 비슷하다.
+
+(예시)
+<c:choose>
+   <c:when test="${ 조건문1 }"></c:when>
+   <c:when test="${ 조건문2 }"></c:when>
+   <c:otherwise></c:otherwise> -- 조건에서 걸러지지 않은 애들이 여기에 떨어진다. (== else)
+</c:choose>
+
+====================================================================================
+
+[ forEach ]
+
+▶ forEach
+
+(예시)
+<c:forEach var="i" begin="1" end="6">
+   <h${i}>반복문연습</h${i}>
+</c:forEach>
+
+- 변수 i에는 맨 처음에 1이 오고, 매 번 1씩 증가하여 마지막 6까지 들어간다.
+
+※ 자바는 한 배열에 데이터타입이 똑같은 것만 들어오고, 자바스크립트는 아무 데이터타입이나 한 배열에 다 들어간다.
+
+절대경로는 맨 처음에 슬래시를 써줘서 모든 경로를 다 써주고,
+상대경로는 맨 처음에 슬래시가 없어서 해당 파일 기준으로 경로를 써준다.
+
+▶ 포워드 패스설정: RequestDispatcher dispatcher = request.getRequestDispatcher("05forEach_Array_List_view.jsp"); 
+▶ 포워드: dispatcher.forward(request, response);
+
+forEach에 begin과 end로 반복횟수를 설정하면 고정적이지만, 배열의 갯수만큼 반복시키려면 item=${ }로 해서 횟수를 지정한다.
+==> items="${ }" 에 들어오는 것은 배열 또는 List 이다.
+==> ${ } 에는 키값을 쓴다.
+==>items에 하나하나의 배열요소들이 forEach에 변수에 차례대로 들어간다.
+
+포워드 방식은 URL이 변하지 않는다. 단지, 해당 URL의 결과값만 보여준다.
+
+<c:if test="${ empty personList }"> 조건문에서 request 영역의 List를 불러왔는데, 불러올 땐 requestScope를 생략해도 괜찮다.
+
+----------------------- 번외--------------------------
+
+▶ <jsp:setProperty property="*" name="psdto"/> 얘를 쓰려면 전제조건이 있다.
+==> 전제조건은 폼태그의 name 과 DTO의 필드명이 똑같아야 한다.
+※ property는 setter, getter 이름과 똑같아야 함
+
+★★★★★ DB의 컬럼명 == form태그에 있는 <input>의 name == DTO에 있는 필드 name
+
+이렇게 다 똑같으면 그냥 <jsp:setProperty property="*" name="psdto"/> 얘 한 번만 쓰면 끝
+==> form 태그 안에 있는 input의 name을 보고 그거랑 똑같은 DTO 필드에 값을 딱 넣어준다.
+
+▶ useBean은 객체생성     <jsp:useBean id="psdto" class="chap03.PersonDTO" />
+▶ setProperty는 setter    <jsp:setProperty property="" name=""/> 
+▶ getProperty는 getter   <jsp:getProperty property="" name="" />
+
+----------------------- 번외--------------------------
+
+<c:forEach var="psdto" items="${personList}" varStatus="" >
+
+▶ varStatus="" 은 목록의 위치값을 알려주는데 도움이 된다.
+status.index 은 몇번째로 저장된 배열(혹은 List)의 요소인지를 알려준다.
+status.count 은 몇번째로 뽑은 것인지를 알려준다.(시작은 1, 요소X)
+
+====================================================================================
+
+[ forTokens ]
+
+forEach에서는 items에 배열이나 List가 들어왔는데,
+forTokens에서는 items에 문자열이 들어온다.
+
+<c:if test="${ empty requestScope.friendNames1 }">
+▶ empty는 아예 friendNames이 없거나, friendNames이 비었으면 해당된다.
+즉, requestScope.friendNames1 == null 과 같다.
+
+▶ <c:forTokens var="" items="" delims=",">
+==> forTokens는 delims에 적은 구분자를 기준으로 짤라서 배열로 만들어준다.
+==> 그리고 var의 변수에 하나하나 넣어준다.
+
+★ null은 아예 없는 것(존재X), empty는 존재하면서 텅 빈것 
+==> not empty는 존재하면서 텅 빈것, null은 아예 존재하질 않는 것
+
+forTokens == split + forEach
+
+====================================================================================
+
+[ fn - 함수 태그 ]
+
+ JSTL은 EL에서 사용할 수 있는 함수 태그를 제공한다.
+
+  length(obj)                      obj가 Collection(배열, List)인 경우 저장된 항목의 개수를, 문자인 경우 문자열의 길이를 반환
+  toUpperCase(str)                 str을 대문자로 변환
+  toLowerCase(str)                 str을 소문자로 변환
+  substring(str, idx1, idx2)       str.substring(idx1, idx2)의 결과를 반환, idx2가 -1일 경우 str.substring(idx1)과 동일
+  substringAfter(str1, str2)       str1에서 str1에 포함되어 있는 str2 이후의 문자열을 구함
+  substringBefore(str1, str2)      str1에서 str1에 포함되어 있는 str2 이전의 문자열을 구함
+  trim(str)                        str 좌우의 공백 문자를 제거 
+  replace(str, src, dest)          str에 있는 src를 dest로 변환
+  indexOf(str1, str2)              str1에서 str2가 위치한 인덱스를 구함
+  startsWith(str1, str2)           str1이 str2로 시작할 경우 true, 그렇지 않을 경우 false를 반환
+  endsWith(str1, str2)             str1이 str2로 끝나는 경우 true, 그렇지 안을 경우 false를 반환
+  contains(str1, str2)             st1이 str2를 포함하고 있을 경우 true를 반환
+  containsIgnoreCase(str1, str2)   대소문자 구분없이 str1이 str2를 포함하고 있을 경우 true를 반환
+  split(str1, str2)                str2로 명시한 글자를 기준으로 str1을 분리해서 배열로 반환 
+  join(array, str2)                array에 저장된 문자열을 합침, 각 문자열의 사이에는 str2가 붙음.
+
+====================================================================================
+
+09월 09일 오후수업 
+
+[ fmt(Formatting) ]
+
+▶ <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %> 
+출력할때 어떠한 형태로 출력할지 정하는데 사용된다.
+
+▶ JSTL은 숫자모양의 문자열을 읽어올 때 자동형변환으로 정수나 실수로 바꿔준다.
+
+▶ <fmt:parseNumber var="pointInt" value="${point}" integerOnly="true" />
+==> fmt:parseNumber
+
+fmt:parseNumber 은 문자열을 숫자형식으로 형변환 시키는 것이다.
+integerOnly="true" 은 소수점은 절삭해버리고 정수만 취해오는 것이다.
+정수만 취해온 값을 변수 pointInt 에 넣어줌.
+
+※ varStatus="변수명" -- "변수명".index는 배열요소의 순서를 알려준다.  (※ 0부터 시작) 
+                           -- "변수명".count는 몇 번째 출력한건지 알려준다. (※ 1부터 시작)
+
+[ fmt 를 이용하여 3자리마다 콤마(,)찍기 ]
+
+<fmt:formatNumber value="${price}" pattern="#,###" />
+
+(예시)
+	<c:set var="sum" value="0" />
+	<c:if test="${ not empty priceArr }">
+		<ul>
+			<c:forEach var="price" items="${priceArr}">
+				<li><fmt:formatNumber value="${price}" pattern="#,###" /></li>
+				<c:set var="sum" value="${sum + price}" />
+			</c:forEach>
+		</ul>
+		priceArr 누적의 합계 : <fmt:formatNumber value="${sum}" pattern="#,###" />
+	</c:if>
+
+==> 실제 계산은 sum에서 되는거고, fmt들은 그냥 출력만 한다.
+==> fmt:formatNumber
+
+====================================================================================
+
+[ JSP와 DB연결 ]
+
+웹에서 회원정보 입력 -- insert
+회원정보 조회하기 페이지 -- select 
+회원정보 조회에서 특정한 회원만 조회 -- select where
+회원정보 수정하기 - update
+회원정보 삭제하기 - delete
+
+CRUD - Create, Read(select), Update, Delete
+
+
+화면출력, 디자인(웹) ------ 자료 입력 받은 후 처리(자바, JSP) ------- 자료저장소에 저장(DB)
+
+1. DB에서 취향결과 받아줄 테이블 생성
+
+2. 자바에서 servlet 생성( servlet으로 만들면 .class 만들고 + web.xml 추가까지 다 된다. )
+
+3. URL을 치면 폼태그가 나와야 한다.
+★ 중요:  form태그에서 method 속성을 설정안해두면 무조건 기본값은 "GET" 방식이다.
+3-1. URL을 치면 doGet( )으로 올테니, forward로 .jsp로 보내준다. (※forward는 URL은 안 바뀌고 내용물만 바뀐다.)
+
+★ 폴더를 웹컨텐츠 아래가 아니라, WEB-INF 아래에 만들어야 하는 이유는?
+==> URL 주소를 /personRegister.do로 통일시켜야 한다.
+==> 우리가 내용물을 보여주는 것은 WEB-INF에 집어 넣는다. (.jsp 파일)
+==> 이렇게 하면 .jsp파일로 구동해서 웹페이지를 볼 수 없다. 
+==> 오직 .do로만 볼 수 있다. 
+
+.jsp 는 구동이 안 되지만, 서블릿은 작동이 잘 된다. (.do)
+★ 웹컨텐츠 폴더에있는 .jsp는 웹페이지 못 연다.
+★ 서블릿은 .do 라는 URL 패턴을 설정해둬서 그 URL로 가면 서블릿 클래스가 작동되게 해놨기에 작동된다.
+==> 또한 포워드로 보내주기 때문에 경로도 안바뀌니깐 보안성도 좋다.
+
+
+4. 해당 페이지에서 정보를 입력하고 전송버튼(submit)을 누르면 결과 페이지로 넘어간다.
+==> 회원의 정보이니깐 POST 방식으로 보내야 한다.
+==> URL이 그대로 똑같이 넘어간다. 
+
+▶ 확장자가 .jsp와 .html는 절대경로로 맨 앞에 슬래시(/)가 나오면 IP주소 + 포트번호가 생략되어 있는 것이다.
+(localhost:9090)/JSPServlet(컨텍스트패스명 --- 프로젝트(애플리케이션)을 구분시켜주는 것)
+▶ 확장자가 .java와 .xml은 절대경로로 맨 앞에 슬래시(/)가 나오면 IP주소 + 포트번호 + 컨텍스트패스명이 생략되어 있다.
+
+
+▶ WAS(Web Application Server)에서 웹어플리케이션을 구분하기 위한 path이다. ... 이클립스에서 프로젝트를 생성하면 , 자동으로 server.xml에 추가된다.
+
+5. 맨 처음에 보여줄때는 그냥 URL을 치고 들어오니 GET으로 들어온다. 그래서 getMethod를 해서 GET이면 폼태그를 출력하고, POST이면 결과조회창을 띄워준다.
+==> 전송을 누르고 넘어간거면 결과 페이지 ( ★ 전송을 눌러야 POST 방식으로 넘어가니깐 서블릿에서 POST 조건절이 작동함 )
+==> 그냥 주소치고 들어온거면 폼태그 페이지 ( 그냥 URL 치고 들어온거는 POST 방식 전송이 작동된게 아니니깐 GET 조건절이 작동함 )
+==> ★ submit을 눌러야 action이 작동되는 것을 유념할 것!!
+
+6. DTO을 만들고, 서블릿에서 DTO객체에 웹에서 입력한 값을 넣어준다.
+
+			String name = request.getParameter("name");
+			String school = request.getParameter("school");
+			String color = request.getParameter("color");
+			String[] foodArr = request.getParameterValues("food");
+
+			PersonDTO_02 psdto = new PersonDTO_02();
+			psdto.setName(name);
+			psdto.setSchool(school);
+			psdto.setColor(color);
+			psdto.setFood(foodArr);
+
+7. DAO을 만들어서 DB에 insert 해준다.
+==> 인터페이스를 먼저 만들어준다.
+==> insert의 리턴은 int니깐 int 리턴타입으로 해준다.
+==> DAO 클래스 만들때 인터페이스 연결해준다.
+
+8. DAO에서 insert sql이 성공적으로 실행되면 1을 주고, 실패하면 SQL 익셉션처리로 간다. 
+그래서 각각에 변수 pathName을 줘서 성공이냐 실패냐에 따라서 URL 주소를 변수에 넣어주도록 하고, 다시 성공페이지와 에러페이지로 각각 가도록 한다.
+
+==> Personregister.do에서 입력결과 조회하기 버튼을 클릭하면 personSelector.do로 가도록 한다.
+
+
+[ 파일 설명 ]
+personRegister.jsp -- 폼태그, 실행부
+personRegister_success.jsp -- DB 전송 성공 시 넘어감, 이후 select 기능 실행시키게 함
+personRegister_fail.jsp -- DB 전송 실패 시(SQL구문오류, Connection 오류 등) 안내 페이지
+
+PersonRegister_01.java -- Servlet이다.  .jsp 파일은 실행을 막아두고, 여기서만 실행되게해서 통일성을 높힘(POST 방식으로 들어올 때만 다음 페이지 넘어갈 수 있게한다.) 
+==> 이후에 DTO에 값을 넣어놓고, 그 DTO객체를 DAO로 넘겨서 SQL 실행시켜 DB로 전송
+
+PersonDTO_02.java -- 폼에서 입력된 값들이 담겨질 DTO
+InterPersonDAO_03.java -- DAO 인터페이스
+PersonDAO_04.java -- INSERT DAO
+MyDBConnection_05.java -- 싱글톤 Connection
+

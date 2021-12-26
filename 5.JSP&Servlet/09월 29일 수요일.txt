@@ -1,0 +1,106 @@
+09월 29일 오전수업
+
+[ 나의 정보 수정하기 ]
+
+로그인을 한 이후에 '나의정보'를 클릭하면 회원정보 수정을 할 수 있게 해준다.
+
+비밀번호를 제외한 성명, 이메일, 연락처, 우편번호, 주소를 먼저 출력해준다.
+
+유효성 검사로 필수입력란이 다 입력되었는지 확인한다.
+
+▶ '나의정보' 클릭시 goEditPersonal(userid) 함수가 실행된다.
+==> userid를 넘겨야 로그인한 유저와 똑같은 사람인지, DB에서 select를 해올 때 where 조건절에 넣을 수 있다.
+
+▶ 팝업창 문서 가운데로 띄우기 
+window.screen.width 을 하면 현재 나의 화면 너비가 나온다.
+window.screen.height 을 하면 현재 나의 화면 높이가 나온다.
+
+스크린 너비가 1600이라하면, 1600 - 800(팝업창 너비) = 800 / 2 = left 값
+스크린 높이가 1000이라하면, 1000 - 600(팝업창 높이) = 400 / 2 = top 값
+
+var pop_left = Math.ceil((window.screen.width - pop_width)/2); <%-- 정수로 만듦 ceil 올림 --%>
+var pop_top = Math.ceil((window.screen.height - pop_height)/2); <%-- 정수로 만듦 ceil 올림 --%>
+
+* Math.ceil은 올림이다.
+
+■ MemberEditAction.java
+
+팝업창의 내용물을 만든다.
+
+★ 누군가 URL을 알아서 악용을 할 수 있기 때문에 항상 Action에서 로그인한 상태인지, 세션에 저장된 로그인정보와 요청을한 유저가 똑같은 유저인지 확인해야한다.
+
+그래서 함수를 호출할때 요청한 사람의 아이디(세션에 있는 아이디)를 GET으로 Action에 보내고, 세션에 저장된 로그인유저의 아이디를 비교해본다.
+==> 만약 임의로 GET에다가 아무 아이디나 적어서 들어오는 사람은 이곳에서 유저정보가 다르니깐 걸러진다.
+
+■ memberEdit.jsp
+
+* 모델: 핵심 기능과 데이터 보관 (DAO, DTO) -- 데이터를 select, update, delete, insert를 해준다.
+* 뷰: 사용자에게 정보 표시(jsp) -- HTML 등을 이용해 정보를 표시해준다.
+* 컨트롤러: 사용자로부터 요청 입력 받아 처리(서블릿) -- 뷰에서의 요청을 모델로 넘겨주고, 다시 받아와서 뷰에다가 출력
+
+memberRegister.jsp 와 비슷하다. 대신에 아이디, 성별, 약관동의등 항목은 삭제해야한다.
+이후에 POST 방식으로 /member/memberEditEnd.up로 전송시켜서 처리를 한다.
+
+
+[ 퀴즈 ]
+
+▶ default로 성명, 이메일, 연락처, 우편번호, 주소를 value로 입력시킬 것
+==> 인풋태그들의 value 속성에 session에 저장된 loginuser의 값들을 넣어준다.
+
+★ session에 저장된 값을 substring 하려면 먼저 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>  으로 fn 라이브러리를 선언 후 ${fn:substring(requestScope.loginuser.mobile, 3, 7)}와 같이 한다.
+
+▶ fn:substring(str, idx1, idx2) - str.substring(idx1, idx2)의 결과를 반환, idx2가 -1일 경우 str.substring(idx1)과 동일
+
+★ fn 함수의 서브스트링은 반드시 어디까지인지도 설정해야한다.
+${fn:substring(requestScope.loginuser.mobile, 3)}
+==> 위와같이 하면 오류
+==> -1로 써야한다.
+
+
+▶ DB에 정보를 넘길땐 누구의 정보를 바꿔줄지(where) 를 알려줘야 한다. 
+==> 성명은 동명이인이 있을 수 있고, 이메일도 암호화가 되어있으니 input type="hidden"으로 userid를 하나 숨겨놔준다.
+==> <input type="hidden" name="userid" value="${sessionScope.loginuser.userid}" /> 
+==> 그러면 폼태그 전송될때 같이 따라간다.
+
+
+■ MemberEditEndAction.java
+
+MemberRegisterAction.java 와 비슷하다. 짜깁기하면 된다.
+
+history.back( ); 은 뒤로가기
+history.go( ); 는 인자값만큼 페이지 이동한다. 양수면 앞으로, 음수면 뒤로 간다.
+
+DAO에 넘겨서 update 처리한다.
+
+▶ 정보를 바꾸려면 반드시 암호를 원래꺼 아니면, 새로운 암호를 입력하니깐 '비밀번호변경일자'도 바꿔줘야 한다.
+
+회원가입 완료가 되면 팝업창은 닫아주고, 다시 세션에 저장된 유저정보를 갱신시켜줘야 한다.
+
+MemberEditEndAction.java에서 DAO 리턴값이 1이면 session에 저장된 loginuser를 불러와서 정보를 갱신시켜주고,
+msg.jsp에서 self.close( ); 로 팝업창은 닫아주고,
+msg.jsp에서 opener.location.reload(true); 으로 부모창인 login.jsp의 새로고침을 해준다.
+==> 또는 opener.history.go(0);
+
+▶ 이메일 중복처리하기
+
+if( DB에 이미 있는 이메일이면 ) {
+
+   if( 세션에 있는 이메일 = 입력한 이메일 ) { ▶ 1번
+    사용가능 (원래 이메일을 계속 쓰겠다는 뜻)
+   }
+
+   else { ▶ 2번
+    사용불가능
+   }
+}
+else { ▶ 3번
+ 사용가능
+}
+
+
+▶ 1번은 원래 있는걸 쓰는거라 상관없다.
+▶ 2번쪽에 떨어지면 이메일 입력칸을 비우기 때문에 새로 입력해야 한다.
+▶ 3번쪽에 떨어지면 DB에 중복되지 않은 새로운 이메일이여서 상관없다.
+
+
+★ 프로젝트는 후에 취업을 위한 자료이니 PPT도 꼼꼼하게 만들어야하며 신경을 써야한다.

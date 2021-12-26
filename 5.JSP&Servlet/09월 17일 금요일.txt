@@ -1,0 +1,215 @@
+09월 17일 금요일 오전수업
+
+/=common.controller.IndexController 이렇게 주소창에 쳐도 index 페이지를 뜨게 하려고 한다.
+
+Command.properties에 적어놓고 web.xml에도 추가를 해야한다. 
+==> <welcome-file>index.up</welcome-file>
+
+▶ <welcome-file-list>
+웰컴 파일이란 디렉토리의 기본 웹 페이지이다.
+클라이언트가 파일 이름을 생략하고 컨텍스트패스까지만 지정해서 요청한다면 웹 서버는 해당 디렉토리에서 웰컴 파일을 찾아서 응답한다.
+==> welcome-file 들을 위에서부터 하나씩 넣어봐준다.
+
+
+★ 어제 질문 추가내용: POST로 들어왔어도, doPost( ) 안에서 doGet(request,response); 를 호출해서 GET에게 넘기는 것처럼, action.execute(request, response); 로 넘겨서 request나 response의 기능을 일반클래스에서 쓸 수 있게 해주면서, request 저장소를 쓸 수 있게 해주는 것이다.
+==> 그래서 일반클래스에서 저장소에 저장했어도 실제론 FrontController(서블릿)에 저장한 것이다.
+
+====================================================================================
+
+[ 암호화, 복호화 ]
+
+한국인터넷진흥원의 국산암호_소스코드_개발_메뉴얼.pdf 을 확인한다.
+현재는 개인정보에서 암호나 주민번호를 암호화시키지 않으면 통신법에 위배되서 필수로 해야한다.
+
+Plaintext: 평문, 암호화가 안 된것
+
+▶ SHA-256은 단방향 암호화 알고리즘이다. 한 번 암호화시키면 못푼다.
+▶ AES-256은 양방향 암호화 알고리즘이다. 한 번 암호화시켜도 복호화가 가능하다.
+
+▶ SHA-256은 메뉴얼에서 주는 소스를 받아서 추가하면 된다.
+- 스태틱메소드이다. Sha256.encrypt(String plainText);
+==> Sha256.encrypt("qwer1234$");
+
+- 리턴타입은 스트링타입이다.  
+
+※ encryption: 암호화
+※ decryption: 복호화
+
+
+▶ AES-256은  https://www.oracle.com/technetwork/java/javase/downloads/jce8-download-2133166.html 에 방문하여 라이브러리를 다운받아야 한다.
+- 기본으로 제공하는 JDK를 설치하면 암호 알고리즘을 만들 수 있는 API가 제공되지만, 
+- AES-128 보다 한단계 더 높은 단계인 AES-256을 구현하기 위해서는 별도의 라이브러리 확장 파일이 필요하다.
+- JDK설치경로\jre\lib\security 와  JRE설치경로\lib\security 에 local_policy.jar 파일과 US_export_policy.jar 두개 파일을 모두 붙여넣기를 하여 덮어쓴다.
+
+▶ https://mvnrepository.com/artifact/commons-codec/commons-codec 에 가서 다운받은 파일명 commons-codec-1.11.jar을 /MyMVC/WebContent/WEB-INF/lib 에 넣어둔다.
+
+▶ AES-256 클래스 파일을 생성한다.
+
+AES-256의 생성자에는 암호화 및 복호화를 할 수 있는 키가 파라미터로 들어온다.
+
+     I am a boy ==> 평문(Plaintext)
+   +1 ==> 암호화키
+-----------------------------------
+    J  bn b cpz ==> 암호화문(Encrypted Text)
+   -1 ==> 복호화키
+-----------------------------------
+    I  am a boy ==> 복호화(해독) (Decryption)
+
+▶ 암호화키는 길고 복잡하게 써야한다. 짧으면 풀려질 위험성이 있다.
+==> UnsupportedEncodingException 키값의 길이가 16이하일 경우 발생
+
+▶ AES-256 메소드들은 인스턴스 메소드이다.
+
+
+■ memberRegister.jsp
+
+- 다음 주소찾기 API 추가
+- <button>에 background-image:url('경로');를 하면 포토샵 등으로 만든 버튼이미지를 버튼으로 사용할 수 있다.
+
+★ WEB-INF 밑에 올 수 있는것은 .jsp 파일뿐이다. 
+==> 이미지파일, CSS파일, HTML파일, JS파일 등은 모두 WEB-INF 폴더에 들어오면 읽을 수 없다.
+
+▶ 문서가 로딩되어지면 span.error의 문구들을 처음에는 모두 숨겨야 한다.
+
+blur 이벤트를 이용하여 유효성검사를 하고 유효성검사에 맞지 않으면 다시 span.error 문구를 나타낸다.
+
+▶ 아이디를 입력하지않고 탭해서 넘어갔다면, 아이디 인풋태그를 제외한 모든 인풋태그들을 disabled를 준다.
+$("table#tblMemberRegister :input").prop("disabled", true);
+
+아이디를 입력하고 넘어갔다면, disabled를 풀어주고, .error 를 숨겨준다.
+
+
+▶ 비밀번호는 2개인데(비밀번호/ 비밀번호확인) DB에 보내주는 것은 비밀번호이다.
+- 비밀번호는 정규표현식으로 검사한다.
+
+var regExp = new RegExp(/^.*(?=^.{8,15}$)(?=.*\d)(?=.*[a-zA-Z])(?=.*[^a-zA-Z0-9]).*$/g);
+// 숫자/문자/특수문자/ 포함 형태의 8~15자리 이내의 암호 정규표현식 객체 생성
+
+▶ 암호확인은 암호와 암호확인이 똑같은지 확인을 하게하고, 틀리면 암호와 암호확인만 disabled를 false로 해준다.
+
+▶ jQuery datePicker - 생년월일 선택, 재직기각, 예매할 때 주로 사용한다.
+- jQuery 라이브러리를 WebContent에 추가한다.
+- header.jsp에 script와 link를 쓴다.
+
+
+▶ blur만 또 믿으면 안되는게 성명을 입력한 상태에서 다음 탭으로 안 넘어가고 submit 버튼을 누르면 그 이후의 blur 유효성 검사가 안 먹힌다.
+==> 왜냐하면 아직 포커스를 잃어버린게 아니여서다.
+
+▶ submit --> goRegister( )
+
+submit 버튼을 누르면, requiredInfo 클래스의 인풋태그들을 배열로 넣고,
+반복문으로 걔네들의 value 값도 변수에 넣고,
+if문을 돌려서 하나하나 검사하고 빈 게 있으면 alert를 띄우고 break;
+
+var arr_requiredInfo = document.getElementsByClassName("requiredInfo");		
+for(var i=0; i<arr_requiredInfo.length; i++) {		
+	var val = arr_requiredInfo[i].value;		
+	if(val == "") {
+		alert("필수입력사항은 모두 입력하셔야 합니다.");
+		break;
+	}			
+}// end of for---------------------------------
+
+====================================================================================
+
+09월 17일 오후수업
+
+- 전송버튼을 누르면 폼태그에 입력된 정보를 ajax로 넘긴다.
+- 그 전에 유효성 검사 --> DB에서 고유한지 검사 --> 전송을 한다.
+
+▶ 유효성 검사 마무리
+
+goRegister( )의 주 목적은 submit 인데, 만약 뭔가를 빠트렸다면 넘길 필요가 없으니 끝낸다.
+
+★ 함수종료는 return, 반복문이나 submit 종료는 return false;
+
+필수입력사항 반복문, 성별선택 if문, 이용약관 체크 if문에 걸리면 return을 줘서 함수를 종료시킨다.
+
+이후 아랫줄까지 내려왔다면 submit을 진행해준다.
+
+만약 필수입력사항 확인작업을 jQuery로 한다면, each( )를 사용하여 한다.
+
+$("input.requiredInfo").each(function( ){
+	var data = $(this).val().trim( );
+	if(data == ""){
+		alert("*표시된 필수입력사항은 모두 입력하셔야 합니다.");
+		boolFlag = true; // 빠트린 것이 있다는 것을 알려준다.
+		return false; // break; 라는 뜻이다.
+	}
+});
+
+▶ 아이디와 이메일과 고유한지 검사한다.
+
+- 스크립트 영역에 전역변수로 아이디 중복검사를 눌렀는지 알려주는 boolean 변수 만들기
+==> 마찬가지로 이메일 중복검사도 눌렀는지 알려주는 변수를 만든다.
+
+var b_flagIdDuplicateClick = false;
+// 가입하기 버튼을 클릭시 "아이디중복확인" 을 클릭했는지 클릭안했는지를 알아보기위한 용도임.
+	
+var b_flagEmailDuplicateClick = false;
+// 가입하기 버튼을 클릭시 "이메일중복확인" 을 클릭했는지 클릭안했는지를 알아보기위한 용도임.
+
+※ 요즘은 아이디는 아예 없애고, 이메일만 쓰게하는 경우가 있다.
+
+▶ 아이디 중복검사 버튼을 눌렀으면, 깃발을 true로 바꿔주고 $ajax로 입력한 아이디를 전송해준다.
+
+팀워크로 쇼핑몰을 만들땐 회원가입 / 상품관리 식으로 나누면 된다.
+==> 회원은 member.model
+==> 상품은 myshop.model
+
+
+■ IdDuplicateCheckAction.java파일 생성, Interface 생성, MemberDAO 생성
+
+아이디 중복검사 버튼을 누르면 ajax로 userid를 데이터전송하고, IdDuplicateCheckAction로 이동한다.
+
+DAO의 select where 절을 돌리는 메소드를 호출한다.
+
+반드시 .java 파일들은 AbstractController.java를 부모클래스로 선언해야 한다.
+==> 얘한테 execute( ) 들을 구현하라고 설정해둠
+
+userid를 가지고 DAO에 가서 select를 하도록 sql문을 작성한다.
+
+※ 처음 개발할때는 get방식을 허용해줘서 중간중간 확인을하고 전부 구동되는게 확인되면 post만 허용되게 막는다.
+
+[ 순서 ]
+중복확인버튼을 누른다 -> ajax로 입력한 아이디를 액션클래스로 보낸다 -> DAO에 아이디를 보내서 SQL문을 돌린다 -> 결과값을 JSON 문자열형태로 바꿔서 view 페이지로 보낸다. -> ajax의 success function에서 처리를 한다.
+
+▶ ajax에서 dataType을 안쓰면 string 형으로 ajax에 돌아오고, dataType:"json" 을 쓰면 object로 돌아온다.
+
+▶ JSON.stringify(객체) -- 자바스크립트 객체를 JSON String으로 바꿔준다.
+▶ JSON.parse(text); -- JSON 모양으로 돼있는 String 타입을 자바스크립트 객체로 만들어준다.
+
+▶ ajax에서 dataType을 안 썻다면 바로 JSON 문자열로 받아와서 --> success function에서 JSON 객체형으로 만들려고 하는 것이다.
+
+
+■ 회원가입 정보 DB로 넘기기
+
+전송(submit)이 되면 MemberRegisterAction.java 로 넘어간다.
+==> url 패턴 /member/memberRegister.up
+
+모바일은 3개로 나눠져있는데 VO에 넘길땐 hp1+hp2+hp3 로 해서 넘긴다.
+마찬가지로 생년월일도 연도 / 월 / 일자로 나눠졌으니 합쳐서 보낸다.
+
+int n = mdao.registerMember(member);
+
+DAO에서는 이제 암호화를 해서 DB에 넣어준다.
+
+■ mdao.registerMember(member);
+
+AES256 는 기본생성자가 없다. 파라미터가 있는 생성자만 있다.
+
+AES256(KEY)를 MemberDAO 기본생성자에 같이 넣어서 만들게 해준다.
+
+비밀번호는 SHA-256 암호화한다. 
+pstmt.setString(2, Sha256.encrypt(member.getPwd()))
+
+이메일과 모바일은 AES-256 암호화한다.
+pstmt.setString(4, aes.encrypt(member.getEmail()));
+pstmt.setString(5, aes.encrypt(member.getMobile()));
+
+▶ "javascript:history.back()"
+==> 자바스크립트를 이용한 이전페이지로 이동하는 것
+
+■ msg.jsp
+-- 회원가입 성공 / 실패 메시지 출력
+-- 페이지 이동 

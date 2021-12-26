@@ -1,0 +1,224 @@
+10월 13일 수업
+
+[ 제품 등록 ]
+
+header.jsp에서 운영자 메뉴에 제품등록하기 생성
+
+ProductRegisterAction.java 클래스 생성
+
+■ ProductRegisterAction.java
+
+관리자로 로그인했을때만 메뉴가 보이지만, 메뉴만 믿어서는 안 된다 session 의 로그인정보와 비교해야한다.
+==> if( loginuser != null && "admin".equalsIgnoreCase(loginuser.getUserid()))
+
+누군가가 URL을 알아냈다 하더라도 막아낼 수 있다.
+
+■ productRegister.jsp
+
+productRegister.jsp 뷰페이지 생성
+
+첨부할 파일은 글자가 아닌, 바이너리 파일이다. 용량이 크다 (바이너리파일 == text가 아닌 파일)
+
+★ GET 방식으로 파일을 첨부하면 글자만 보낸다.
+
+★ 폼에서 파일을 첨부하려면 method는 반드시 POST이어야 하고, 반드시 enctype="mutipart/form-data" 으로 지정해줘야 한다.
+<form name="prodInputFrm"
+      action="<%= request.getContextPath()%>/shop/admin/productRegister.up"
+      method="POST"                         
+      enctype="multipart/form-data">
+
+
+▶ 카테고리 목록에는 DB에서 정보를 조회해와서 찍어줘야한다.
+==> 정적으로 찍어주는게 아니라, Action에서 먼저 카테고리들을 가져온 다음에 view페이지로 넘겨야 한다.
+==> 부모클래스에서 리퀘스트에 저장해줬는데 쓸 수 있는 이유는, 프론트컨트롤러의 리퀘스트 객체를 계속해서 이어서 쓰고있기 때문이다. (프론트 --> 부모 --> 자식)
+==> product.jsp view페이지에는 header2.jsp 가 표준액션 인클루드되어있기 때문에 Action에서 준 리퀘스트 객체가 공유됨, 마찬가지로 header2.jsp 에는 지시어 인클루드로 categoryList.jsp 가 들어와있는데 코드 자체가 들어와지니깐 리퀘스트 객체를 같이 쓸 수 있음
+
+
+▶ 마찬가지로 spec도 정적이 아닌 동적으로 DB에서 가져와 찍어준다.
+==> 얘는 부모클래스에 없는 메소드이니 Action에서 만들어준다.
+
+▶ 제품수량에 스피너 추가하기
+
+		// 스피너 달아주기
+		$("input#spinnerPqty").spinner({
+			spin:function(event,ui){
+	            if(ui.value > 100) {
+	               $(this).spinner("value", 100);
+	               return false;
+	            }
+	            else if(ui.value < 1) {
+	               $(this).spinner("value", 1);
+	               return false;
+	            }
+			}
+		});
+
+==> 제이쿼리 UI가 있어야 한다.
+==> 100보다 크면 100을 값을 넣어줘서 맥시멈 설정을 한 것이다.
+==> 0보다 작으면 1 값을 넣어줘서 미니멈을 설정한 것이다.
+
+▶ 추가이미지파일에 스피너 추가하기
+
+		// 추가이미지파일에 스피너 달아주기
+		$("input#spinnerImgQty").spinner({
+			spin:function(event,ui){
+	            if(ui.value > 10) {
+	               $(this).spinner("value", 10);
+	               return false;
+	            }
+	            else if(ui.value < 0) {
+	               $(this).spinner("value", 0);
+	               return false;
+	            }
+			}
+		});
+
+맥시멈은 10개, 미니멈은 0개
+
+★ 스피너의 이벤트는 "spinstop"이다.
+
+추가이미지파일에 개수가 변하면 그 개수만큼 input[type=file] 태그가 생겨야 한다.
+
+		$("input#spinnerImgQty").bind("spinstop", function(){
+			
+			var html ="";
+			var cnt = $(this).val();
+
+			for(var i=0; i<Number(cnt); i++){
+				html += "<br>";
+				html += "<input type='file' name='attach'"+i+" />";
+				
+			}// end of for---------------------------
+
+		});// end of $("input#spinnerImgQty").bind("spinstop", function(){});
+
+▶ 첨부된 이미지 파일 개수 알려주기
+==> $("input#attachCount").val(cnt);
+
+▶ 전송 전에 유효성 검사
+
+전송버튼을 클릭하면 다음과 같이 유효성검사를 한다.
+
+$(".infoData").each(function(){
+var val = $(this).val().trim();
+if(val == ""){
+$(this).next().show();
+flag = true;
+return false; // each문의 break;
+}
+});
+
+★ forEach(function(item, index, array){})
+★ each(function(index, item){})
+==> each는 break 기능인 return false;를 사용가능함
+
+▶ 취소버튼을 누르면 추가이미지파일에 생성된 input 태그들도 없어져야 한다.
+==> empty()를 이용하여 비운다.
+
+		$("input[type=reset]").click(function(){
+			$("div#divfileattach").empty();
+		}); // end of $("input[type=reset]").click(function(){})-------------------
+
+==> 이러면 스크립트로 꽂아넣어준 태그들도 사라진다.
+
+====================================================================================
+
+[ 제품정보 전송 ]
+
+===> 파일을 첨부해서 폼을 전송하는 것은 처음이다. 첨부된 파일도 받아와야 한다.
+
+
+Client(Admin) -------- 파일첨부 -------> WAS의 DISK ------> 파일다운로드 ------> Client
+                          (파일업로드)
+
+※ 추후 스프링에서는 이런 기능을 하는 클래스를 구현할 것이다.
+
+▶ 지금은 cos.jar를 사용한다.
+==> lib 폴더에 추가한다.
+==> 파일 업로드 및 다운로드 라이브러리이다.
+
+▶ 파일업로드 구현
+
+폼을 전송하면 다시 POST로 ProductRegisterAction.java 전송한다.
+
+즉, GET방식이면 폼이 있는 뷰페이지를 보여주고, POST방식이면 입력한 정보를 처리해준다.
+
+▶ 글자만 넘어오면 기존의 방식으로 하면 되지만, 이번에는 파일이 첨부되었다.
+
+★★★ 글자만 넘어온다면 request 객체를 이용하여 받아올 수 있지만(request.getParameter), 하지만 첨부된 바이너리 파일은 request 객체로 받아올 수 없다. 그래서 글자도 받고, 첨부된 파일도 받으려면 cos.jar 라이브러리를 추가한 다음에 MultipartRequest 를 사용해야 한다.
+
+import com.oreilly.servlet.MultipartRequest;
+
+MultipartRequest mtrrequest = null;
+
+★★★ com.oreilly.servlet은 request의 기능도 하면서, 파일업로드 다운로드도 다 해준다.
+====================================================================================
+▣  1. 첨부되어진 파일을 디스크의 어느경로에 업로드 할 것인지 그 경로를 설정해야 한다.
+
+새로 추가하는 제품의 이미지와 설명서는 동일하게 images 폴더에 업로드하겠다.
+
+▶ ServletContext svlCtx = session.getServletContext(); 을 통해서 images 파일의 실제경로를 알아온다.
+==> String uploadFileDir = svlCtx.getRealPath("/images");
+
+C:\NCS\workspace(jsp)\MyMVC\WebContent\images
+C:\NCS\workspace(jsp)\.metadata\.plugins\org.eclipse.wst.server.core\tmp0\wtpwebapps\MyMVC\images
+
+▶ 이 둘의 차이는 무엇인가? 
+==> properties에 나오는 경로는 개발용도이다.
+==> 실제 서버(WAS)가 구동되는 경로는 .metadata에서 움직인다. 
+
+==> 실제 데이터들은 .metadata에 있는 것을 가지고 웹페이지가 구동되는 것이다.
+
+★ 즉, properties에 폴더 경로와 .metadata는 서로 동기화되어있지만 실제 서버를 구동할때 사용하는 것은 .metedata에 것을 가지고 돌린다.
+==> 이미지파일 업로드를 하면 .metadata에 있는 images 폴더에 올라갈 것이다.
+==> 대신에 properties 로컬주소에는 복제가 안될 것이다.
+
+★ 로컬주소에서 파일삭제/생성 ----------> .metadata 반영
+★ .metadata 파일삭제/생성 -------------> 로컬주소에 반영 X
+
+▶ FileRenamePolicy policy
+			사용자1(자기노트북)	사용자2(자기노트북)	사용자3(자기노트북)
+파일명			나의얼굴.jpg	나의얼굴.jpg	나의얼굴.jpg
+내용물			각진얼굴		동그란얼굴	이쁜얼굴
+WAS에 저장된 파일명	나의얼굴.jpg	나의얼굴1.jpg	나의얼굴2.jpg
+==> 이름은 같으나 내용물은 다르다.
+==> 이럴때 덮어씌우면 안된다. 
+==> 즉, FileRenamePolicy를 쓰면 WAS에 저장될땐 중복된 이름을 바꿔서 저장해주고, 다시 다운로드할때는 원래 파일명으로 바꿔서 준다.
+
+==> 파일 경로가 잘못될 수 있으니 IOException 처리를 해줘야 한다.
+====================================================================================
+▣ 2. 첨부 이미지 파일을 올렸으니 그 다음으로 제품정보를 (제품명, 정가, 제품수량,...) DB의 tbl_product 테이블에 insert 를 해주어야 한다.
+
+★ 폼태그로 파일첨부하고 올리면 실제로 .metadata쪽 images 폴더에만 추가되고, 개발용 로컬주소에 images에는 업로드가 안된다.
+
+글자만 입력받을땐 request를 사용하지만, 이제는 첨부된 파일이 있으니 MultipartRequest을 이용해서 폼 정보를 받아온다.
+
+MultipartRequest를 이용해서 파일명, 파일경로 등을 얻어와야 함
+
+▶ 첨부한 파일명을 받아오는법
+
+1. 실제 WAS의 .metadata 폴더에 리네임되어서 저장된 파일명을 가져오는법
+==> .getFilesystemName()
+
+제품테이블에서 
+,prdmanual_systemFileName varchar2(200)       이 컬럼에는 리네임되는 파일명을 넣어준다.
+,prdmanual_orginFileName  varchar2(200)        이 컬럼에는 리네임되기전의 오리지널 파일명을 넣어준다.
+
+★ 
+=> mtrequest.getOriginalFileName("prdmanualFile"); 얘는 리네임 되기전에 파일명이다. -- 유저의 파일명!
+=> mtrequest.getFilesystemName("prdmanualFile"); 얘는 리네임이 되고 실제 WAS에 저장된 파일명이다.
+
+▶ 유저의 파일명은 나중에 view단에 표기용이고, 그걸 누르면 실제 다운받아오는것은 was에 저장된 파일명으로 타겟을 잡아줘야 한다.
+
+★ textarea는 크로스 사이트 스크립트 공격에 대응하는  SecureCode로 작성해줘야한다.
+<와 > 를 &lt; 등으로 치환시키기만 하면 된다. 
+
+▶ 한 제품에 추가이미지가 있을수도 없을수도 있다. 
+==> 그래서 테이블을 따로 만듬
+
+어떤 제품의(fk_pnum), 이미지파일(imagefile)이 여러 개 혹은 아예 없을수도있다.
+
+▶ 한 개의 폼에서 두 개의 테이블에 정보를 꽂아주고 있다.
+==> 제품번호를 채번해서 가져와야함
+==> 제품테이블과 추가이미지테이블 둘 다 같은 제품번호를 써야하기 때문이다.
+==> 또한 추가이미지가 여러개여도 제품번호가 똑같아야해서

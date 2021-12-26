@@ -1,0 +1,148 @@
+10월 15일 수업
+
+[ 장바구니 담기 ]
+
+장바구니 담기 버튼을 클릭시 goCart( ) 함수가 실행된다.
+
+function goCart( ) {
+
+var frm = document.cartOrderFrm; // 폼에는 주문개수, 제품번호가 담겨져있다.
+
+var regExp = /^[0-9]+$&/; // 숫자만 체크하는 정규표현식
+var oqty = frm.oqty.value; // 주문수량
+var bool = regExp.text(oqty); // 주문수량이 숫자인지 아닌지 정규표현식으로 검사한다.
+
+if(!bool) { // 숫자가 아니라면
+alert("주문개수는 1개 이상이어야 합니다.");
+frm.oqty.value = "1";
+frm.oqty.focus();
+return; // 종료
+}
+
+// 문자형태로 숫자로만 들어온 경우 (스피너가 아닌 직접 입력해서 들어온 경우)
+
+oqty = parseInt(oqty);
+if(oqty < 1){
+alert("주문개수는 1개 이상이어야 합니다.");
+frm.oqty.value = "1";
+frm.oqty.focus();
+return; // 종료
+}
+
+// 주문개수가 1개 이상인 경우
+frm.method = "post";
+frm.action = "<%= request.getContextPath()%>/shop/cartAdd.up";
+frm.submit();
+
+}
+
+
+▶ 로그아웃한 상태에서 상품상세를 보다가 로그인을 하면 메인화면이 아닌 보고있던 상품페이지로 보내줘야한다.
+
+■ ProdViewAction.java
+
+로그인 또는 로그아웃을 하면 시작페이지로 가는 것이 아니라 방금 보았던 그 페이지로 그대로 가기 위해서 부모클래스에 메소드를 하나 만든다.
+
+▶ super.goBackURL(request);
+로그인을 하지 않은 상태에서 특정제품을 조회한 후 "장바구니 담기"나 "바로주문하기"할때와 "제품후기쓰기"를 할때 로그인 하라는 메시지를 받은 후 로그인 하면 시작페이지로 가는 것이 아니라 방금 조회한 트겆ㅇ제품 페이지로 돌아가기 위한 것이다.
+
+▶ 모든 클래스마다 goBackURL(request);가 필요테니 부모클래스(AbstractController.java)에 만든다.
+
+■ AbstractController.java
+
+public void goBackURL(HttpServletRequest request) {
+
+HttpSession session = request.getSession( );
+session.setAttribute("goBackURL", MyUtil.getCurrentURL(request));
+}
+
+※ getCurrentURL은 어떤 페이지로 이동한다하면 해당 Action으로 먼저 이동하는데 거기서 그 페이지의 URL을 따온다.
+==> URL을 치면 액션에 먼저들어가는데 그 친 URL을 세션에 딱 저장시켜줌
+==> currentURL + "?" + queryString 을 반환해준다.
+==> 컨텍스트패스는 빼고 반환해준다.
+
+이제 Action 단에서 goBackURL(request); 메소드를 호출하면 세션영역에 이동하려는 URL을 저장해준다.
+==> 그 이동하려는 페이지로 가서 로그인이나 로그아웃을 해도 세션에서 URL을 꺼내와서 메인화면이 아닌 원래 그 화면으로 보내줄 수 있다.
+
+▶ 로그인의 경우의 수는 2가지
+
+맨 처음에 로그인을 하거나, 어떤 상품을 보다가 로그인을 하거나
+
+1. 맨 처음에 로그인을 했다면 상품상세보기를 안 갔으니 세션에 goBackURL이 저장되어 있지 않다.
+==> goBackURL이 null일테니 인덱스 페이지로 보낸다.
+
+2. 그러나 어떤 상품을 보다가 로그인을 했으면 goBackURL이 저장되어 있다.
+==> goBackURL이 null이 아니라면 해당 페이지로 보내준다.
+
+▶ 로그아웃같은 경우에는 먼저 goBackURL의 주소값을 꺼내온 다음에 세션을 말소시키고(session.invalidate();) goBackURL이 null이 아니면 해당 페이지로, null이라면 인덱스 페이지로 보내준다.
+
+▶ 상품상세보기를 가지 않고 쇼핑몰홈에서 보다가 로그인을 해도 그 페이지로 이동시켜주려면?
+MallByCategoryAction.java에도 부모클래스의 super.goBackURL(request); 메소드를 호출만 해주면 된다.
+
+마찬가지로 MallHome1Action.java와 MallHome2Action.java에도 super.goBackURL(request); 만 추가해주면 로그인하기 전의 페이지를 기억해뒀다가 로그인 해주면 다시 그 페이지로 이동한다.
+
+====================================================================================
+
+▶ 장바구니 테이블 생성
+
+▶ 장바구니 VO 생성
+
+제품번호가 장바구니 테이블에 있으니깐, 제품테이블과 JOIN을 시켜서 어떤 제품을 넣었는지 알 수 있다.
+
+장바구니에는 현재 로그인한 사람의 정보(세션), 제품번호(폼에서 입력함), 물품수량(폼에서 입력함) 을 넣어준다.
+
+▶ 만약에 해당 제품이 이미 장바구니에 있는 것이라면?
+==> 이미 들어가져있다면 행을 또 추가하는게 아니라, 수량을 업데이트를 해야한다.
+==> 장바구니에 없는거는 insert, 있는거는 update를 한다.
+
+1. 먼저 장바구니 테이블에서 유저아이디와 제품명으로 해당 제품이 담겨져 있나 확인한다.
+
+2-1. 없는 제품이라면 insert를 해준다.
+
+2-2. 이미 있는 제품이라면 기존 개수에서 += oqty로 추가를 해준다.
+
+====================================================================================
+
+■ cartList.up
+
+로그아웃을 했는데 유저의 장바구니 목록을 보여주면 안되니깐 장바구니 리스트에서는 goBackURL(request); 메소드를 호출해선 안 된다.
+
+장바구니 보기는 반드시 해당사용자가 로그인을 해야만 볼 수 있으니, 로그인 여부를 확인해준다.
+
+장바구니 목록은 오직 자기의 것만 봐야하며, 주문리스트를 가져오는 메소드, 해당 유저의 장바구니 총액(sum)을 가져오는 메소드를 만들어준다.
+
+List<CartVO> cartList = pdao.selectProductCart(loginuser.getUserid()); // 장바구니 리스트 주문제품명, 주문수량, 제품포인트, 제품판매가
+
+장바구니 테이블과 제품 테이블을 JOIN하여 가져온다.(제품명과 원가, 판매가, 이미지, 포인트 등을 가져오기 위해서이다)
+
+
+HashMap<String,String> sumMap = pdao.selectCartSumPricePoint(loginuser.getUserid()); // 해당 회원의 모든 장바구니 합계액
+
+수량 * 판매가의 합계, 수량 * 포인트의 합계를 가져온다.
+
+▶ CartVO에는 장바구니 번호, 사용자ID, 제품번호, 주문량만 나와져있다.
+==> 제품명, 판매가, 포인트 등은 없다.
+==> 대신에 CartVO에는 ProductVO prod; 필드가 있으니 여기에 정보를 넣어주면 된다.
+==> 허나, ProductVO에는 oqty*saleprice, oqty*point 등도 없다.
+
+장바구니VO.oqty * 제품VO.saleprice
+장바구니VO.oqty * 제품VO.point
+
+ProductVO에 있는 private int totalPrice, totalPoint를 이용한다.
+
+	/////////////////////////////////////////////////
+	// *** 제품의 총판매가(실제판매가 * 주문량) 구해오기 ***
+	public void setTotalPriceTotalPoint(int oqty) {   
+		// int oqty 이 주문량이다.
+	
+		totalPrice = saleprice * oqty; // 판매당시의 제품판매가 * 주문량
+		totalPoint = point * oqty;     // 판매당시의 포인트점수 * 주문량 
+	}
+
+	            // **** !!!! 중요함 !!!! **** //
+	            prodvo.setTotalPriceTotalPoint(oqty); // 품목별 금액을 자동계산하기 위해서 다음과 같은 setter를 만든다.
+	            // 주문량을 넣어주면 현재 prodVO에 넣어진 판매가와 포인트를 이용하여 계산해준다.
+	            // While문이기 때문에 리스트 항목별로 해줄거임
+	            // **** !!!! 중요함 !!!! **** //
+
+▶ 얘는 각 제품별 실제판매가*주문량이고, Map은 모든 제품들이 실제판매가*주문량과 포인트*주문량을 각각 다 더 한것이다.

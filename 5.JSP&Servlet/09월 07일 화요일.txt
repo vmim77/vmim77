@@ -1,0 +1,310 @@
+09월 07일 오전수업
+
+[ JSP & Servlet ]
+
+JDBC는 일반 자바프로젝트여서 Build Path로 라이브러리를 추가했었다.
+
+JSP는 그와 다르게 다이나믹 웹 프로젝트여서 WebContent - WEB-INF - lib에 추가해야한다.
+==> 웹같은 경우에는 .jar(라이브러리파일)을 Bulid Path에서 굳이 Add External JAPs로 넣어줄 필요없이 lib 폴더에 넣어주면 자동으로 Mapping된다.
+
+※ 앞으로 필요한 라이브러리는 위와같이 WebContent - WEB-INF - lib에 추가하면 된다.
+
+※ WAS에서 안 쓰는 다이나믹 프로젝트는 remove 하기 -- 서버구동시 부하가 덜 걸린다.
+
+기기의 성능이 안 좋다면 Tomcat WAS 설정에서 Timeouts start와 stop 시간을 조금 늘리면 도움이 된다.
+==> 그 시간 안에 구동과 종료를 하겠다는 뜻이다.
+
+★WAS란_톰캣설치관련.txt 꼭 읽어보기 // 면접에서 나오는 문제이다.
+
+어제까지 했었던 웹프로젝트는 "Web Server"였다. --> HTML 파일과 이미지 파일로 이루어진 정적인 문서나 이미지 파일을 웹페이지로 보여주게끔 해주는 서버이다.
+▶ Web Server는 정적인 서비스를 제공해주는 서버이다.
+
+WAS는 Web Application Server로써 Web Server 기능 + Web Container(웹컨테이너) 기능을 합친 것을 말한다.
+▶ WAS는 동적인 서비스를 제공해준다.
+
+▶ Web Container 란?
+JSP(HTML 페이지속에 Java 소스가 올라가 있는 페이지) 와 
+Servlet(웹기능을 하도록 만들어진 Java Class)을 실행시킬수 있는 소프트웨어이다.
+
+(예시, USB에 .hwp 파일이 있지만 내 노트북/PC에 한글이 없으면 안 돌아간다.)
+
+허나, WAS는 JSP, Servlet을 돌아갈 수 있게끔 해주는 소프트웨어까지 포함되어 있는 것이다.
+
+apache(Web server) / Tomcat(Web Container) 식으로 구성되어있다.
+==> 우리는 지금까지 apache만 사용했던 것인데, 오늘부터는 Tomcat까지 사용해볼 것이다.
+
+===> C:\apache-tomcat-8.5.47\conf\context.xml 파일 수정하기 <====
+19번 라인의 <Context> 를 
+<Context reloadable="true" privileged="true"> 으로 수정한다.
+이것을 수정해주면 프로그램 개발시 Java Class 파일에 수정을 가하여 저장하는 순간 자동으로 톰캣서버에 Java Class 파일이
+리로드 되어지므로 톰캣서버를 재구동 할 필요가 없어지게 된다.
+
+※ 톰캣의 포트번호를 바꾼 이유는 오라클이 이미 8080 포트를 사용해서 충돌을 방지하고자 9090으로 바꾼다.
+=====================================================================================
+[ JSP란? ]
+
+Java Server Page의 약자로써 HTML 문서 속에 Java 코드가 들어가 있는 것이라고 보면 된다.
+
+그동안 우리는 Java의 실행결과물을 콘솔로 보았지만, JSP는 그 결과물을 웹페이지(HTML)로 보여준다는 것이다.
+
+[ Servlet이란? ]
+
+서블릿이라함은 웹서비스 기능을 해주는 자바 클래스를 말한다.
+
+=====================================================================================
+
+이제는 HTML파일이 아니라 JSP파일을 만들어야 한다.
+
+<%@ page language="java" contentType="text/html; charset=${encoding}"
+        pageEncoding="${encoding}"%> 
+
+이게 맨 위에 포함되어져 있으면 JSP이고, 없으면 HTML문서이다.
+
+
+JSP파일을 처음 만들면 오류메시지가 뜨는데 "현재 작동이 불가능하다"는 뜻이다. 왜냐하면 현재 Web Container가 없기 때문이다.
+==> 아직 Web Server만 넣어서 그렇다. (Apache만 넣음)
+==> 빌드패스 - add library - server runtime - apache tomcat 선택
+
+
+항상 프로젝트를 만들어서 쓸려면 빌드패스에서 아파치톰캣(웹컨테이너)를 꼭 넣어줘야 한다.
+==> add library... 에다가
+
+<%@ page language="java" contentType="text/html; charset=${encoding}"
+        pageEncoding="${encoding}"%> 
+==> 이 페이지의 언어는 "java"이며, "html"로 보여준다.
+
+
+바디태그 안에 <% %> 안에 자바코드를 서술하면 된다.
+==> 얘를 스크립틀릿(scriptlet) 이라고 부른다.
+
+HTML 코드에 자바변수를 넣는 방법은 <%= 변수명%> 식으로 하면 된다.
+==>  <%= %> 을 expression(표현식)이라고 부른다.
+==>  이  expression(표현식)은  "스크립틀릿(scriptlet)에서 작성된 결과값"을 웹브라우저상에 보여주고자 할 때 사용하는 것이다.
+
+
+▶ 자바코드는 웹페이지에서 소스보기를 해도 안 나온다. 결과물만 보인다. ( JSP의 장점 보안성 )
+▶ JSP는 작성하기가 서블릿보다 쉽고, 작성하기가 빠르다
+
+<!-- HTML 주석문1 -->
+<%-- JSP 주석문2 --%> << 얘도 소스보기에서는 안 보인다.
+==> 앞으로 주석문은 JSP 주석문을 사용하는게 좋다. 왜냐하면 다른 사람들이 소스보기로 볼 수 있으니깐
+
+1부터 10까지의 합에 20을 더한값은 <span><%= sum+20%></span>
+<!-- 일반적으로 표현식은 보여만 주는데 거기에 수식을 넣어도 괜찮다. -->
+
+
+만든거는 .jsp 파일인데 실행을 돌리는 순간 웹컨테이너(톰캣)이 자동으로 .java파일로 만들고, 컴파일이 된 .class파일이 실행된다.
+==> C:\NCS\workspace(jsp)\.metadata\.plugins\org.eclipse.wst.server.core\tmp0\work\Catalina\localhost\JSPServletBegin\org\apache\jsp\chap01
+==> JSP 파일을 만들기만 한다고 안 나온다, WAS로 한 번 구동을 해서 크롬으로 열면 .java / .class 파일이 생성되어야 결과물이 나온다.
+
+★ 혹여나 코드의 변경된 부분이 반영되지 않는다면 해결방법은 WAS를 구동해서 컴파일된 .java파일과 .class 파일을 삭제하고 다시 이클립스에서 WAS를 실행시켜서 재생성시킨다.
+
+
+스크립틀릿은 반드시 바디태그에 써야하는건 아니다. 아무 곳에나 써도 괜찮음
+=====================================================================================
+
+[ 지시어 - page / calendar ]
+
+
+순수한 자바에서는 Date now = new Date( ); 를 하면 import 에러가 떠서 그냥 import 를하면 됐는데, 
+JSP에서는 어떻게 import를 할까?
+
+import를 할때는 지시어를 쓴다.
+==> 지시어의 종류에는 page, include, taglib가 있다.
+==> 형태 : <%@지시어%>
+
+★ 필요한 클래스를 import 하려면 <%@ page %>  page directive(페이지 지시어)를 사용하여 import 를 한다.
+
+▶ String.format("%tF %T %tA", now, now, now);
+%tF              날짜를 yyyy-mm-dd 형식으로 포맷해주는 것
+%tT              날짜의 시각을 HH:MM:SS 형식으로 포맷해주는 것  
+%tA              요일명 출력
+
+=====================================================================================
+
+JSP를 css파일, js파일처럼 분리시킬 수 있다.
+==> HTML(디자인부분)과 java(로직부분)으로 나눌 수 있다.
+
+[ 지시어 - include ] 
+
+
+동시에 두 개의 .jsp에 자바코드를 넣는 방법은? ==> include 지시어
+
+include directive(지시어)인 <%@ include  %> 을 사용하여
+04_1_todayTime.jsp 파일의 내용을 불러와서 넣어주는 것이다.
+
+
+우리가 어떠한 자바 소스 결과물을 여러 개의 .jsp 파일에 넣고 싶다면 include 지시어를 쓴다.
+
+=====================================================================================
+
+[ 폼 태그 및 서블릿 ]
+
+▶ 폼태그에서 GET 방식으로 데이터 전송하기
+
+폼태그 속에 fieldset, legend, input들이 있어야 전송이 된다.
+
+<form action="">
+==> action: 이 폼의 내용을 누가 받아서 무엇을 해줍니까?
+
+
+** 인터넷 웹페이지에서 주소창에 뒤에 .do가 붙어있다면 java, Spring을 이용하여 만든 것이다.
+
+★ 액션에서 맨 처음에 슬래시(/)가 없으면 상대경로를 말한다. // 슬래시가 있으면 절대경로를 말한다.
+==> http://localhost:9090/JSPServletBegin/chap02/JSPServletBegin/01_getMethod.do오전 11:46 2021-09-07
+
+<form action="JSPServletBegin/01_getMethod.do"> 
+==> 이렇게 쓰면 상대경로 (상대경로는 http://localhost:9090/JSPServletBegin/chap02/JSPServletBegin/01_getMethod.do)
+
+<form action="/JSPServletBegin/01_getMethod.do"> 
+=> 이렇게 쓰면 절대경로 (절대경로는 http://localhost:9090/JSPServletBegin/01_getMethod.do)
+
+
+★ <form action="/JSPServletBegin/01_getMethod.do"> 이렇게 쓰는 것보다는 <form action="<%= ctxPat%>/01_getMethod.do"> 이렇게 컨텍스트 패스를 쓰는 것이 좋다.
+==> 왜냐하면 내가 계속 컨텍스트 패스네임을 바꿀 수 있으니깐
+
+★ 주의사항으로는 컨텍스트 패스네임은 서버들끼리 중복될 수는 없다.
+JSP 서버에서 이미 / 를 패스네임으로 썼는데, jQuery 서버에서도 / 를 패스네임으로 쓰려하면 오류가 뜬다.
+
+<form action="<%= ctxPath%>/01_getMethod.do" method="get">
+★ method="get"을 생략하더라도 기본값은 GET 방식이다.
+
+GET 방식은 전송을하면 URL 다음에 ?(구분자)가 나오는데 구분자(?)를 중심으로 왼쪽이 URL이고, 오른쪽은 전송되어질 데이터가 나온다.
+
+(예시): http://localhost:9090/JSPServletBegin/01_getMethod.do ? name=%EC%9D%B4%EC%88%9C%EC%8B%A0&school=%EB%8C%80%ED%95%99%EC%9B%90%EC%A1%B8&color=red&food=%EC%A7%AC%EB%BD%95
+==> GET방식은 URL에서 전송할 데이터가 전부 공개되어진다.
+==> 보안성↓ 속도는 POST보다 ↑
+==> 그래서 일반적으로 보안과 관계없는 데이터조회(예: 물품정보 조회)와 같은 select 절에서 주로 사용된다.  (쇼핑몰에서 물건검색할땐 GET)
+
+=====================================================================================
+
+▶ 폼태그에서 POST 방식으로 데이터 전송하기
+
+POST 방식은 URL에서 전송할 데이터가 나타나질 않는다. 데이터를 감춰서 본문 속에 감춰버리며 보안성이 훨씬 좋지만, 속도는 GET보다는 낫다.
+==> 구분자(?) 또한 나오질 않는다.
+(예시): http://localhost:9090/JSPServletBegin/01_getMethod.do
+==> 회원가입과 같이 민감한 정보를 다루는 페이지에서는 POST 방식( insert, update 등 DML은 POST )
+
+=====================================================================================
+
+▶ 서블릿
+<form action=""> 에서 action에 들어가서 DB에 자료를 전송하는(DAO) 전용 자바 클래스가 필요하다
+- WEB-INF/web.xml ==> 배치서술자, WAS가 구동되어질때 딱 1번만 읽어들인다.
+
+★ 확장자가 .xml 또는 .java 인 파일에서 URL경로를 나타낼때 맨 앞에 / 가 오면
+그 앞에는  http://ip주소:포트번호/컨텍스트패스명 이 자동으로 붙게 된다.
+우리의 컨텍스트 패스명은  /JSPServletBegin 이다.      
+즉, 우리는  http://localhost:9090/JSPServletBegin/01_getMethod.do 으로 된다.
+
+  <servlet>
+  	<servlet-name>abc</servlet-name>
+  	<servlet-class>chap02.GetMethod_01</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>abc</servlet-name>
+  	<url-pattern>/01_getMethod.do</url-pattern>
+  </servlet-mapping>
+저런 URL을 치면 abc라는 이름의 서블릿을 부르고, abc서블릿의 실제 클래스 파일은 GetMethod_01 이라는 뜻이다.
+
+
+★ 폼을 전송(submit)하면 폼의 액션에 적혀진 URL에 전송되는데, 그러면 배치서술자에 서술된 서블릿이 작동하여 해당 URL 패턴이 전송되면 반응하는 서블릿이 작동한다.
+
+=====================================================================================
+
+09월 07일 오후수업
+
+XML의 주석문 <!-- --> 에 딱 맞춰서 써야한다. 대시(-)를 여러개 쓰면 오류가 난다.
+
+폼에서 전송(submit) 누름 -> action에 적힌 곳으로 요청보냄 -> action의 주소 패턴이 나오면 XML에서 그 XML에 대한 서블릿을 호출 -> 실제 서블릿에서 작성된 코드가 실행
+
+★ 배치서술자 web.xml이 수정되면 항상 껏다 켜줘야 한다. 왜냐하면 WAS가 구동될 때 딱 1번만 읽어오기 때문이다.
+
+
+[ 서블릿 ]
+
+서블릿이란? 웹서비스 기능을 해주는 자바 클래스를 말한다.
+
+서블릿이 되기 위한 조건은 3가지이다.
+
+1. javax.servlet.http.HttpServlet 클래스를 부모 클래스로 상속을 받아와야 한다.
+
+2. 웹클라이언트의 요청방식이 GET 방식이면, doGet( ) 메소드를 Overriding(재정의)를 해주어야 한다.
+==> 만약 POST 방식이면, doPost( )를 재정의
+
+* UID 값을 고정시켜준다. ==> 데이터를 네트워크로 주고 받기 때문에 UID가 바껴서 다르다면 에러가 뜨니깐
+
+3. 만약에  서블릿(Servlet)에서 결과물을 웹브라우저상에 출력하고자 한다라면 doGet() 메소드와 doPost() 메소드 모두 
+서블릿(Servlet)의 두번째 파라미터인 HttpServletResponse response 를 사용하여 출력해준다.
+
+★ 항상 폼의 정보를 담아서 보내줄 땐 name 속성에 담아준다.
+==> 폼에 입력된 정보들은 모두 DB에 갈거여서 name은 주로 컬럼명과 똑같이 설정한다.
+
+▶ 폼에서 보내준 정보를 받아오는법?
+==> 서블릿의 doGet(doPost)에서 받는다.
+==> 받을 땐 파라미터 중 하나인 request를 사용한다.
+==> request.getParameter("name명");
+==> 만약 값이 2개 이상이라면? (== checkbox와 같이) request.getParameterValues("name명");
+
+▶ 콘솔이 아닌 웹브라우저에 다시 출력하려면?
+response 객체를 사용한다.
+
+response.setContentType("text/html; charset=UTF-8");
+==> 위와 같은 타입으로 다시 보내주겠단 뜻이다.
+==> 왜냐하면 JSP가 언어는 java이지만, 문서는 HTML 형식으로 써져있어서 이다.
+
+★ POST 전송방식은 한글이 깨져서 나온다. 그래서 한글이 깨지는 것을 방지시켜야 한다.
+==> 반드시 getParameter 하기 전에 request.setCharacterEncoding("UTF-8"); 을 해줘야 한다.
+
+▶ 전송방식도 계속해서 바꿔줘야 할 수가 있다. 그러면 전송방식에 맞춰서 doGet( )과 doPost( )를 번갈아서 쓸 수밖에 없는데, 그렇다고 똑같은 내용을 두 번이나 쓸 필요가 없이 다음과 같이하면 된다.
+==> doGet, doPost 둘 다 동일한 메소드를 호출시켜서 거기에 파라미터로 request와 response를 넘겨서 실행시키도록 한다.
+
+★ JSP에서 보내온 방식이 어떤 것인지 아는 방법은 request.getMethod(); 이다.
+
+▶ 혹은 doPost가 자기의 파라미터를 다시 doGet( )에 담아서 호출시키면 코드를 한 번만 치면 된다.
+
+
+=====================================================================================
+
+[ web.xml 에 서블릿을 쓰는게 아닌 어노테이션을 이용해서 서블릿 하는 방법 ]
+
+★ 서블릿은 클래스인데 웹기능을 해주는 클래스이다.
+==> 부모는 javax.servlet.http.HttpServlet
+
+==> 자바소스에서 클래스를 만드는게 아닌, 서블릿을 만들어서 하면 된다.
+==> 배치서술자인 web.xml 에 기술하지 않고 @WebServlet 어노테이션을 사용한 예제 == 
+
+★ 서블릿 클래스로 만들어서 서블릿을 잡아줬어도 WAS를 항상 껏다켜야 한다.
+==> 어노테이션으로 web.xml에 접근했으니깐
+==> 재부팅 안하면 "HTTP 상태 404 – 찾을 수 없음" 뜬다.
+==> web.xml이 바뀌면 반드시 WAS를 껏다켜줘야 한다. 
+==> @WebServlet 또한 마찬가지로 껏다켜줘야 한다.
+
+
+=====================================================================================
+
+[ 표준액션 - include ]
+
+HTML 파일을 또 HTML 파일에 include 하면 이상해지니, include 지시어로 불러오는 파일에는 HTML 태그를 모두 지워야 한다.
+
+HTML 태그를 모두 지워도 contentType="text/html" 을 선언해놔서 HTML 태그가 다 먹힌다.
+
+
+
+<jsp:include page="01include.jsp" /> ==  <%@ include file="01include.jsp" %>
+          태그식 include                                      표현식 include
+
+<jsp:include page="01include.jsp" /> 은 해당 파일이 실행되서 출력된 결과물을 가져온다.
+<%@ include file="01include.jsp" %> 은 해당 파일을 집어넣어서 돌리고 가져온다.
+
+
+<jsp:include page="01include.jsp" /> 
+==> 이걸 JSP 표준액션 include 라고 한다.
+
+
+부트스트랩 example03 에서 board, index, login, register 모두 header 와 footer가 공통부분임을 이용하여 header, footer.jsp 파일로 따로 만들어서 각각에서 include 액션으로 부르게 한다.
+
+<jsp:include page="header.jsp" />
+
+
+<jsp:include page="footer.jsp" />
+★ 똑같은 부분은 짤라버리고 include로 불러오고 각자 다른 부분만 직접 집어넣는 것이다.

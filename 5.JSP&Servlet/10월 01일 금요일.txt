@@ -1,0 +1,208 @@
+10월 1일 오전수업
+
+★ Pull - Commit - Push 순으로 할 것
+
+[ 회원전체 목록 ]
+
+▶ 운영자로 로그인해야 운영자 메뉴가 보여야 함
+${sessionScope.loginuser != null and sessionScope.loginuser.userid == 'admin'}
+
+※ 당부의 말씀 --> 메뉴만 믿지 말아야 한다.(어드민으로만 들어오면 메뉴가 보인다고 끝내면 안된다.)
+==> 누군가가 URL을 알아내서 들어올수도 있으니 막아야 한다.
+
+■ MemberListAction.java
+
+관리자로 로그인했을때만 조회가 가능하도록 한다.
+if( loginuser != null && "admin".equalsIgnoreCase(loginuser.getUserid()) ) { 기능 구현 } 
+
+★ 페이징 처리
+회원목록을 몇개씩 끊어서 짤라서 보여준다.
+★ 오라클 hr 수업에서 페이징처리 배웠다. -- rowno을 응용해서 짤라보기
+
+프로시저로 회원 200명 넣기
+
+※ 예시로 네이버 쇼핑에서 '노트북'을 검색해보면 총 자료의 양은 1,900만개 이다. 이걸 한꺼번에 다 불러온다면 로드속도도 엄청 느려지고, 스크롤 양도 많아진다.
+==> 그래서 페이징처리 해준다.
+
+============================================================================================
+alter table 테이블명 add constraint 제약조건명 primary key(컬럼명);
+alter table 테이블명 add constraint 제약조건명 unique(컬럼명);
+alter table 테이블명 add constraint 제약조건명 check( ... );
+       
+alter table 테이블명 add constraint 제약조건명 foreign key(컬럼명) references 부모테이블명(컬럼명);
+alter table 테이블명 add constraint 제약조건명 foreign key(컬럼명) references 부모테이블명(컬럼명) on delete casecade;
+alter table 테이블명 add constraint 제약조건명 foreign key(컬럼명) references 부모테이블명(컬럼명) on delete set null;
+
+alter table 테이블명 drop constraint 제약조건명;
+============================================================================================
+
+
+★ 페이징으로 DAO를 돌릴려면 먼저 where 에는 몇 개씩 짤라올지를 정해야 하고, 컬럼에는 와일드키로 누구를 검색할지 정해야 한다.
+
+즉 DB로 보낼게 많다.
+
+컬럼에 rownum을 넣으면 된다. rownum은 의사컬럼이다.
+==> rowid는 오라클에서 고유한 id값을, rownum은 해당 테이블에서 행의 순서를 알려줌
+
+★ where절에 rownum은 바로 쓸 수가 없다. 그래서 rownum에 별칭을 주고 그 위를 inline-view로 감싸고 써야한다.
+==> 처음에만 먹히고, 다음에 바로 이어서 쓰면 안 먹힌다.
+
+select  rno, userid, name, email, gender
+from
+(
+    select rownum AS rno, userid, name, email, gender
+    from
+    ( 
+        select userid, name, email, gender
+        from tbl_member
+        where userid != 'admin'
+        order by registerday desc
+    ) V
+) T
+where rno between 1 and 10;
+
+
+▶ rno의 페이지값은 가변되어야 한다.
+
+같은 1페이지여도 between의 값은 달라져야 한다.
+
+★ 페이징처리 공식이 있다.
+[ 페이지 시작값 ]
+currentShowPageNo   ==> 3    // 몇번째 페이지
+sizePerPage         ==> 3         // 몇 페이지씩 볼건지
+    
+(currentShowPageNo * sizePerPage) - (sizePerPage - 1)
+	3		3	      3               => 9 - 2 => 7	
+[ 페이지 끝값 ]
+(currentShowPageNo * sizePerPage)
+           3                         3                                 => 9
+
+==> 7~9 페이지가 3번째 페이지이다.
+
+▶ where 절에 들어가서 검색될 이름은 가변되어야 한다.
+
+name like '%' || '유' || '%' 만 where 절에 추가하면 된다.
+
+select rno, userid, name, email, gender
+from
+(
+    select rownum AS rno, userid, name, email, gender
+    from
+    ( 
+        select userid, name, email, gender
+        from tbl_member
+        where userid != 'admin'
+        and name like '%' || '유' || '%'
+        order by registerday desc
+    ) V
+) T
+where rno between 1 and 10; -- 1 페이지(한 페이지당 10개를 보여줄 때)
+
+
+[ 정리 ]
+검색조건, 검색명, 현재페이지, 페이지당 회원명수를 paraMap에 보내야함
+
+검색조건 - searchType // "name", "userid", "email"
+검색명 - searchWord // "유"
+현재페이지  - currentShowPageNo
+페이지당 회원명수 - sizePerPage
+
+근데 맨처음에는 일단 다 보여줘야 함
+맨 처음에 searchType, searchWord 는 NULL, 
+currentShowPageNo는 NULL이면 if로 1로 기본값을 바꿔준다.
+sizePerPage도 맨 처음에는 NULL인데 if로 10으로 바꿔준다.
+
+
+★ 검색어가 있을수도 있고 없을수도 있다.
+
+
+■ MemberDAO 
+
+맵에서 searchWord을 꺼내와서 있으면 where 검색어를 넣어주고, 없으면 안 넣어준다.
+
+if(searchWord != null && !searchWord.trim().isEmpty() ) {
+// 검색어가 NULL이 아니면서, 텅비지 않았으면?
+
+sql += " and "+ colname +" like '%' || ? || '%' ";
+
+★★ 데이터만 위치홀더를 줘야하지, 컬럼명과 테이블명에는 위치홀더 주면 안된다.
+
+
+}
+
+==> 또 검색타입이 이메일이면 검색어로 입력한걸 암호화시켜서 보내줘야 함
+
+if( "email".equals(colname) ) {
+ aes.encrypt( searchWord );				
+}
+
+
+▶ 검색어가 있는 경우, 없는 경우 나눠서 위치홀더 매핑을 해야함.
+
+			if(searchWord != null && !searchWord.trim().isEmpty() ) { // 검색어가 있는 경우
+				// 위치홀더 매핑
+				pstmt.setString(1, searchWord);
+				pstmt.setInt( 2, (currentShowPageNo * sizePerPage) - (sizePerPage - 1) ); // 페이징처리 공식
+				pstmt.setInt( 3, (currentShowPageNo * sizePerPage) ); // 페이징처리 공식
+				
+			}
+			else { // 검색어가 없으면 위치홀더는 2개뿐임
+				pstmt.setInt( 1, (currentShowPageNo * sizePerPage) - (sizePerPage - 1) );
+				pstmt.setInt( 2, (currentShowPageNo * sizePerPage) );
+			}
+
+■ MemberListAction.java
+
+받아온 List를 View페이지로 전송
+
+
+
+1. 상단메뉴에서 회원목록조회 클릭
+2. Action에서 초기정보 가져옴 ( 10명씩, 1페이지에 검색조건없이 모두 다 조회 )
+3. view 페이지로 전송 
+4. 검색어 입력 --> 폼 전송 
+5. Action에서 해당정보 가져옴 ( N명씩, 1페이지에 검색조건에 맞게 조회 )
+6. 다시 view 페이지로 전송
+
+
+
+※ 물건 보여주는건 속도가 중요하지, 보안은 ↓이니깐 GET으로 
+※ 회원정보도 admin으로 들어와야 볼 수 있으니 GET으로
+
+
+▶ sizePerPage는 10, 5, 3만 들어오게 막아야함 
+if ( sizePerPage == null || !( "3".equals(sizePerPage) || "5".equals(sizePerPage) || "10".equals(sizePerPage) ) ) {
+	sizePerPage = "10";
+}
+
+NULL이거나, 3 또는 5 또는 10이 아니면 무조건 sizePerPage = 10;
+
+============================================================================================
+
+오후수업
+
+==회원정보조회== 
+▶ 모달클릭시 특정회원 상세조회 ( 테이블로 디자인, CSS 넣기 )
+
+[ 검색하기 ]
+검색타입 - 검색명
+페이징처리
+
+
+[ 기타 ]
+회원정보수정?
+회원정보삭제?  
+
+
+== 상품등록하기 == 
+
+상품정보 - DB에서 끌고오기
+상품설명서 - 파일첨부하기
+상품이미지
+상품테이블에 insert
+
+
+== 전체주문내역 ==
+주문테이블 select
+상품 상태 변경해주기 
+

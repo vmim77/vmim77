@@ -1,0 +1,90 @@
+10월 21일 수업
+
+[ 주문내역 ] 
+
+- 주문목록은 URL을 알아왔다고 하더라도 로그인을 해야 볼 수 있다.
+- 회원은 자신의 주문목록을 운영자는 모든 회원의 주문목록을 볼 수 있다.
+
+- 주문목록의 개수 알아오기
+select count(*) AS CNT
+from tbl_order A JOIN tbl_orderdetail B
+on A.odrcode = B.fk_odrcode     -- 여기까지는 운영자용 SQL
+where A.fk_userid = 'leess';    -- 여기까지가 일반사용자용 SQL
+
+▶ 주문목록 개수를 이용해서 총 페이지의 수를 알 수 있다.
+주문목록 개수 / sizePerPage = totalPage
+
+
+▶ 이제 운영자, 일반유저별 주문내역을 조회하는 SQL을 날린다.
+
+select odrcode, fk_userid, odrdate, odrseqnum, fk_pnum, oqty, odrprice, deliverstatus
+, pname, pimage1, price, saleprice, point
+from
+(       
+        select row_number() over (order by B.fk_odrcode desc, B.odrseqnum desc) AS RNO
+                , A.odrcode, A.fk_userid
+                , to_char(A.odrdate, 'yyyy-mm-dd hh24:mi:ss') AS odrdate
+                , B.odrseqnum, B.fk_pnum, B.oqty, B.odrprice
+                , case B.deliverstatus
+                    when 1 then '주문완료'
+                    when 2 then '배송중'
+                    when 3 then '배송완료'
+                end AS deliverstatus
+        , C.pname, C.pimage1, C.price, C.saleprice, C.point
+        from tbl_order A join tbl_orderdetail B
+        on A.odrcode = B.fk_odrcode
+        join tbl_product C
+        on B.fk_pnum = C.pnum 
+        where 1=1
+                            
+        and A.fk_userid = 'vmim77' -- 얘는 일반유저일때
+) V 
+where RNO between 1 and 10;
+
+▶ 주문 테이블과 주문 상세 테이블 그리고 제품 테이블을 조인해서 받아오기 때문에 List<특정VO>가 아닌 List<HashMap<String, String>> 으로 리턴을 받아온다.
+
+※ 조인된 SQL문은 맵으로 받아오는 것이 VO보다 편하다.
+
+▶ flex 아이템들은 width의 기본값은 내용물 만큼 잡히고 height 값들은 동일하게 설정되어 inline 형태로 보여진다.
+▶ justify-content: space-between; 은 flex 아이템들 사이에 간격을 균일하게 만들어 주는 것이다.
+▶ style="text-decoration: line-through;" 는 취소선이다.
+
+
+▶ 운영자면 배송중, 배송완료에 대한 체크박스가 나온다. 해당 체크박스를 클릭하면 그 행의 제품번호와 주문코드(odrcode)를 Action으로 날려서 상태를 update 시키도록 한다.
+
+▶ 운영자가 주문코드를 클릭하면 그 회원에 대한 정보를 팝업창으로 띄워서 보여준다.
+==> 주문코드만 가지고 DB에 가서 해당 회원의 정보를 가지고 멤버테이블에서 찾아온다.
+
+select *
+from tbl_member
+where userid = (select fk_userid from tbl_order where odrcode = ?);
+
+
+★ 자바스크립트에서 선택자를 잡을때 만약 해당 태그가 복합 클래스를 가지고 있다면 모든 클래스명을 다 적어서 선택해줘야 한다.
+==> class 가 복합으로 이루어진 경우 class='chkDeliverStart custom_input' 와 같이 해야하지 class=chkDeliverStart 으로 하면 안된다.
+
+▶ 폼을 모든 체크박스가 해당되도록 걸어놨기 때문에 일단 모든 체크박스들과 주문코드를 비활성화 시켜준 다음에, 체크된 애들만 선택자를 잡아 체크박스와 주문코드들은 다시 비활성화를 풀어주고 폼태그를 전송한다.
+==> 그러면 우리가 체크한 애들의 제품번호와 주문코드만 폼태그를 통하여 전송된다.
+
+
+▶ 폼에서 한 name으로 복수개의 값들이 넘어온다면 getParameterValues로 받아오면 배열에 넣을 수 있다.
+==> 만약 값이 2개 이상이라면? (== checkbox와 같이) request.getParameterValues("name명");
+
+
+▶ 휴대폰 메시지를 보낼때 만약 전체 배송하기를 하면 여러명에게 문자를 보내야 한다.
+
+- 동일한 전표에 서로 다른 제품들을 구매한 경우 동일 전표를 가진 사람에게는 SMS를 1번만 보내야 하므로 중복을 허락치 않는 HashMap을 사용한다.
+==> 맵은 키값이 똑같으면 새로운 값으로 덮어씌워진다.
+
+[참조]
+for(String odrcode : odrcodeArr) {
+ odrcodeMap.put(odrcode, odrcode);
+ // odrcodeMap 에 전표를 넣기(HashMap 이므로 중복된 전표가 있으면 덮어씌우므로 고유한 값만 존재하게 된다). 
+}
+
+이제 저 HashMap에서 키값들만 뽑아와서 그 주문코드를 보유하고있는 회원의 정보를 반복문으로 꺼내온다.
+==> .KeySet(); 을하면 Set<String> 타입으로 반환해준다.
+
+for(String key : odrcodeMapKeysets) 를 이용해서 문자보내기를 해준다.
+==> 주문전표별 메시지를 보내준다.
+★ 중복된 주문전표가 있다면 고유한 값만 있으니 각 주문별로 한 번씩만 문자를 보내게 된다.
