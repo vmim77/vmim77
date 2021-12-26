@@ -1,0 +1,148 @@
+Microsoft Windows [Version 10.0.19043.1083]
+(c) Microsoft Corporation. All rights reserved.
+
+C:\Users\User>sqlplus /nolog
+==> 오라클 명령프롬프트인 SQL> 을 띄워라는 말이다.
+
+SQL*Plus: Release 11.2.0.2.0 Production on 수 7월 14 15:47:47 2021
+
+Copyright (c) 1982, 2014, Oracle.  All rights reserved.
+
+SQL> show user
+==> 현재 오라클 서버에 연결된 사용자가 누구인지 보여라는 말이다.
+USER is ""
+==> 현재 오라클 서버에 연결된 사용자가 없다는 말이다.
+
+SQL> connect system/cclass
+==> 오라클 사용자계정명은 system 암호는 cclass 인 것으로 연결하라는 말이다. 
+Connected.
+==> Connected. 은 연결이 되었다는 말이다.
+
+SQL> show user
+USER is "SYSTEM"
+==> 현재 오라클 서버에 연결된 사용자는 "SYSTEM" 이라는 말이다.
+
+SQL> disconnect
+==> 현재 오라클 서버에 연결된 사용자를 오라클서버에서 연결을 끊어라는 말이다.
+Disconnected from Oracle Database 11g Express Edition Release 11.2.0.2.0 - 64bit Production
+
+USER is ""
+SQL>
+==> 현재 오라클 서버에 연결된 사용자가 없다는 말이다.
+
+SQL> connect system/dafs
+ERROR:
+ORA-01017: invalid username/password; logon denied
+
+SQL> host
+==> 잠시 운영체제의 명령프롬프트로 가겠다는 말이다.
+Microsoft Windows [Version 10.0.19043.1083]
+(c) Microsoft Corporation. All rights reserved.
+
+C:\Users\User>exit
+==> 다시 오라클 명령프롬프트로 돌아가겠다는 말이다.
+SQL>
+
+SQL> host cls
+==> 잠시 운영체제의 명령프롬프트로 가서 운영체제의 명령어인 cls(화면지우기) 를 하라는 말이다.
+
+SQL> conn system/cclass ==> connect 를 conn 으로 줄일 수 있다.
+Connected.
+※ disconnect = disconn
+
+SQL> conn sys/cclass ==> sys 로 연결을 하려면 반드시 뒤에 as SYSDBA 를 꼭 붙여야 한다.
+ERROR:
+ORA-28009: connection as SYS should be as SYSDBA or SYSOPER
+
+SQL> conn sys/cclass as SYSDBA
+Connected.
+SQL> show user
+USER is "SYS" ==> SYS 가 오라클 데이터베이스 관리자(정) 계정이다.
+
+
+SQL> disconn
+Disconnected from Oracle Database 11g Express Edition Release 11.2.0.2.0 - 64bit Production
+
+SQL> conn SYSTEM/cclass
+Connected.
+
+SQL> show user
+USER is "SYSTEM"
+
+SQL> shutdown immediate ==> 오라클 DB서버 종료하기
+ORA-01031: insufficient privileges
+==> 오라클 데이터베이스 관리자(부) 계정인 system 은 오라클 서버를 중지 또는 시작(구동)할 권한이 없다.
+
+SQL> show user
+USER is "SYS"
+==> 오라클 데이터베이스 관리자(정) 계정인 sys 은 오라클 서버를 중지 또는 시작(구동)할 권한이 있다.
+SQL> shutdown immediate  ==> 오라클 서버를 중지하는 것이다.
+Database closed.
+Database dismounted.
+ORACLE instance shut down.
+
+
+SQL> conn system/cclass
+ERROR:
+ORA-01034: ORACLE not available ==> 오라클 서버가 중지 되었으므로 사용불가 하다.
+ORA-27101: shared memory realm does not exist
+Process ID: 0
+Session ID: 0 Serial number: 0
+
+
+Warning: You are no longer connected to ORACLE.
+
+SQL> conn sys/cclass as sysdba
+Connected to an idle instance.
+==> 현재 오라클 서버가 중지되어진 상태에서 sys 로 연결되었다는 말이다. 
+==> sys 는 오라클 서버가 중지되어진 상태이라도 연결이 가능하다.
+
+SQL> show user
+USER is "SYS"
+
+SQL> startup ==> 오라클 서버를 구동시켜주는 명령어인데 오로지 sys 만이 해줄 수 있다. (※ 엄밀히 말하면 sysoff도 가능하다)
+ORACLE instance started.
+
+Total System Global Area 1068937216 bytes
+Fixed Size                  2260048 bytes
+Variable Size             616563632 bytes
+Database Buffers          444596224 bytes
+Redo Buffers                5517312 bytes
+Database mounted.
+Database opened.
+
+SQL> show user
+USER is "SYS"
+
+SQL> disconn
+Disconnected from Oracle Database 11g Express Edition Release 11.2.0.2.0 - 64bit Production
+
+SQL> conn system/cclass
+Connected.
+==> sys 를 제외한 나머지 모든 오라클 사용자 계정은 반드시 오라클 서버가 구동되어야만 연결하여 사용할 수 있다.
+SQL> show user
+USER is "SYSTEM"
+
+SQL> select * from dba_users;  ==> sqlplus 를 사용하여 DB를 다루고자 할 때 아래와 같이 결과물을 보기에 안좋다!!
+                                       ==> 그래서 우리는 ORACLE Database 서버 를 설치 한 후 ORACLE Database 를 다루는 툴 sqldeveloper 를 사용하여 쓰겠다.
+
+** ORACLE Database == JDK ( 원본 )
+** sqldeveloper == eclipse ( 좀 더 쓰기편하게 해주는 툴)
+
+USERNAME                                                        USER_ID
+------------------------------------------------------------ ----------
+PASSWORD
+------------------------------------------------------------
+ACCOUNT_STATUS                                                   LOCK_DAT
+---------------------------------------------------------------- --------
+EXPIRY_D DEFAULT_TABLESPACE
+-------- ------------------------------------------------------------
+TEMPORARY_TABLESPACE                                         CREATED
+------------------------------------------------------------ --------
+PROFILE
+------------------------------------------------------------
+INITIAL_RSRC_CONSUMER_GROUP
+------------------------------------------------------------
+EXTERNAL_NAME
+--------------------------------------------------------------------------------
+PASSWORD_VERSION ED AUTHENTICATION_T
