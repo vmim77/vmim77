@@ -1,0 +1,79 @@
+11월 09일 수업
+
+[ 파일 업로드, 다운로드 ]
+
+비회원은 파일을 다운로드 받을 수 없고, 로그인이 되었을 때만 파일을 다운로드 받을 수 있다.
+
+▶ #162 첨부파일 이름 및 파일크기를 보여주고 첨부파일을 다운로드 되도록 만들기 (view.jsp)
+
+첨부파일 링크(<a>)를 누르면 "/download.action?seq=${requestScope.boardvo.seq}" 로 전송을한다. 
+→ 글번호만 알면 실제 파일명을 알 수 있다.
+
+파일크기는 fmt를 사용하여 3자리마다 콤마(,)를 찍어준다.
+→ <fmt:formatNumber value="${requestScope.boardvo.fileSize}" pattern="#,###" />
+
+▶ #163 링크를 클릭하면 다운로드를 받게 해줘야한다.
+
+※ @RequestMapping에 method를 명기해주지 않으면 GET/POST 둘 다 허락한다.
+예시) method= {RequestMethod.GET}
+
+다운로드는 로그인을 한 유저만 할 수 있기때문에 AOP로 설정해서(requiredLogin_*) 해당 메소드가 실행되기 전에 로그인 유무를 검사하게 한다.
+
+그저 다운로드만 시키면되니깐 리턴타입은 void이고, 파라미터 패턴에 의해서 첫번째는 request, 두번째는 response 파라미터가 들어와야 한다.
+→ 로그인 검사를 위해서 필요하다.
+
+seq를 가지고 DB에 가서 fileName, orgFilename을 가져와야 한다.
+→ paraMap.put("seq", seq); 
+→ BoardVO boardvo = service.getViewWithNoAddCount(paraMap);
+
+searchType, searchWord를 사용 안하려면 ""로 맵에 담아서 넘겨야한다. 
+paraMap.put("searchType", "");
+paraMap.put("searchWord", "");
+
+★ GET방식은 유저가 URL로 장난칠 수 있다는 것을 기억해야 한다.
+
+조건절에 걸리면 alert를 띄워주고 싶은데 download 메소드는 void라 view 페이지로 전송을 시키지 않는다.
+그래서 response를 이용하여 직접 적어줘야 한다.
+→ alert 코드를 웹브라우저에 써야한다.
+
+response.setContentType("text/html; charset=UTF-8");
+PrintWriter out = null;
+
+out = responser.getWriter( );
+out.println("자바스크립트 코드");
+
+★ 파일을 올리는게 아닌 다운로드이니 MultipartRequest가 아닌 일반 request를 써도 된다.
+
+▶ FileManger.java에 파일다운로드 메소드를 등록해준다. -  public boolean doFileDownload() {}
+→ 파라미터로는 서버에 저장된 파일명(saveFilename)과 어떠한 이름으로 다운로드 시킬지에 필요한 orgFilename, 경로(path)가 필요하다.
+
+originalFilename = new String(originalFilename.getBytes("UTF-8"),"8859_1");
+// originalFilename.getBytes("UTF-8") 은 UTF-8 형태로 되어진 문자열 originalFilename 을 byte 형태로 변경한 후
+// byte 형태로 되어진 것을 표준인 ISO-Latin1(혹은 Latin1 또는 8859_1) 형태로 인코딩한 문자열로 만든다.
+
+★ 어떤 종류의 파일을 다운로드 받겠다고 알리기 위해서는 response 객체가 필요하다.
+→ fileManager.doFileDownload(fileName, orgFilename, path, response);
+→ 모든 종류의 파일을 다운로드 받는다 해도 명기를 해줘야 한다.
+
+response.setContentType("application/octet-stream");
+→ 모든 종류의 파일을 다운로드 받겠다.
+
+→ 이미지면 "image/jpeg", 비디오면 "video/mpeg"
+
+★ 또한 실제 내용물은 무엇인지 적어줘야 한다.
+→ Content-disposition : 내용물은 무엇인가?
+→ attachment; : 파일이 첨부가 되었다.
+→ filename = originalFilename : 그 파일명은 originalFilename 이다.
+
+위의 정보를 .setHeader( )로 header에 넣어준다.
+
+
+.read(b, 0, len) : 리턴타입은 실제로 읽어들인 길이(int)가 나온다.
+→ b: 읽어들인 것을 어디에 저장할 것인가
+→ 0: 어디서부터 읽을 것인가
+→ len: 얼마나 읽을 것인가
+
+while( ( length = bfin.read(readByte, 0, 4096) ) != -1 ) { } 
+→ length가 -1이 아닐때까지 읽는다.
+→ length가 -1면 읽을 게 없다는 뜻이다.
+

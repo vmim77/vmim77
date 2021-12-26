@@ -1,0 +1,163 @@
+11월 19일 수업 
+
+[ 페이지 내용 Excel 파일로 다운로드하기 ]
+
+empList.jsp에 btnExcel 버튼의 클릭 이벤트를 생성한다.
+
+검색과 비슷하다. 보고싶은 부서와 성별을 가지고 넘어가서 똑같이 결과물을 가져오되, 그냥 파일로 다운로드 받는 것이다. ( ※ 검색은 출력한다. )
+→ 웹페이지의 출력된 내용을 기반으로 다운로드 받는 것이 아니라, 검색처럼 DB에서 조회해오고 그것을 Excel로 다운로드 받는 것이다.
+→ 웹페이지의 Text를 다운로드 받는 것이 아니다.
+
+기존의 검색 이벤트 처리를 이용하여 편집을 한다.
+→ 정보를 다운로드 받기 때문에 전송방식은 "POST"
+
+파일 다운로드만 하기 때문에 유지시키려고 다시 View페이지에 deptIdArr과 gender를 보내줄 필요가 없다.
+
+이후 검색과 동일하게 hr DB에서 empList를 가져온다. 그 후에 엑셀 시트를 하나 만들어서 출력해준다.
+
+▶ 시트를 생성하기 전에 Maven으로 아파치 POI 라이브러리가 필요하다.
+아파치 POI는 MS 오피스파일 포맷(*.docx, *.xlsx, *.pptx)을 순수 자바 언어로 읽고 쓰기 기능을 제공한다.
+
+
+1. 워크북 객체 생성
+SXSSFWorkbook workbook = new SXSSFWorkbook();
+
+2. 시트 생성 
+SXSSFSheet sheet = workbook.createSheet("시트명");
+
+3. 시트 열 너비 생성 
+sheet.setColumnWidth(columnIndex, width);
+→ columnindex: 몇 번째 열인가? (※ 0부터 시작한다.)
+→ width: 폭 너비
+
+sheet.setColumnWidth(0, 2000);
+sheet.setColumnWidth(1, 4000);
+sheet.setColumnWidth(2, 2000);
+sheet.setColumnWidth(3, 4000);
+sheet.setColumnWidth(4, 3000);
+sheet.setColumnWidth(5, 2000);
+sheet.setColumnWidth(6, 1500);
+sheet.setColumnWidth(7, 1500);
+→ 열 8개 생성
+
+4. 행의 위치를 나타내는 변수 생성
+
+5. Cell의 정렬을 설정한다.
+
+CellStyle 정렬하기 
+CellStyle 객체를 생성하여 Alignment 세팅하는 메소드를 호출해서 인자값을 넣어준다.
+
+========================= 타이틀용 Cell Style 정렬 =============================
+CellStyle mergeRowStyle = workbook.createCellStyle();
+mergeRowStyle.setAlignment(HorizontalAlignment.CENTER);
+mergeRowStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+// import org.apache.poi.ss.usermodel.VerticalAlignment 으로 해야함.
+
+========================= 헤더용 Cell Style 정렬 ===============================
+CellStyle headerStyle = workbook.createCellStyle();
+headerStyle.setAlignment(HorizontalAlignment.CENTER);
+headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+
+=======================================================================
+
+mergeRowStyle.setFillForegroundColor(IndexedColors.DARK_BLUE.getIndex());
+→ 타이틀에 적용될 배경색
+
+mergeRowStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+→ setFillPattern은 해당 색을 어떤 패턴으로 입힐지를 정한다.
+
+=======================================================================
+
+headerStyle.setFillForegroundColor(IndexedColors.LIGHT_YELLOW.getIndex());
+→ 헤더에 적용될 배경색
+
+headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+→ setFillPattern은 해당 색을 어떤 패턴으로 입힐지를 정한다.
+=======================================================================
+Font mergeRowFont =  workbook.createFont(); // import org.apache.poi.ss.usermodel.Font; 으로 한다.
+mergeRowFont.setFontName("나눔고딕"); // 글자 폰트 설정
+mergeRowFont.setFontHeight((short)500); // 글자 크기 설정(파라미터가 Short이므로 기본적인 정수는 int 형이니 short로 casting)	    
+mergeRowFont.setColor(IndexedColors.WHITE.getIndex()); // 글자 색상 설정
+mergeRowFont.setBold(true); // 글자 Bold(굵게)
+	    
+mergeRowStyle.setFont(mergeRowFont);
+
+→ 정렬 스타일에 위에 해당하는 폰트 스타일을 주는 것이다.
+=======================================================================
+CellStyle 테두리 Border
+
+headerStyle.setBorderTop(BorderStyle.THICK);
+headerStyle.setBorderBottom(BorderStyle.THICK);
+headerStyle.setBorderLeft(BorderStyle.THIN);
+headerStyle.setBorderRight(BorderStyle.THIN);
+=======================================================================
+Cell 병합시키기
+
+int rowLocation = 0;
+sheet.createRow(rowLocation); // 병합시킬 행을 생성한다. 엑셀에서 행의 시작은 0 부터 시작한다.
+→ 엑셀내부에서는 1부터 행이 시작되지만, 자바내부에서는 0부터 index를 잡는다.
+
+for(int i=0; i<8; i++) {
+   mergeRow.createCell(i);
+   cell.setCellStyle(mergeRowStyle);
+   cell.setCellValue("우리회사 사원정보");
+}// end of for-----------------------
+
+→ 병합시킬 셀 8개을 만든다. 위에서는 컬럼이 8개 들어간다는 설정을 한 것이고, 병합을 위해서는 실제 셀을 8개 만들어야 한다.
+→ 또한 생성되는 셀마다 설정해둔 RowStyle을 설정해준다. 
+→ 각각마다 "우리회사 사원정보" 라는 Value를 넣어준다.
+
+이후에 Cell 병합을 시켜준다.
+sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 7));
+
+셀병합은 시트의 addMergeRegion 메소드에 CellRangeAddress 객체를 인자로 하여 병합시킨다.
+CellRangeAddress 생성자의 인자로(시작 행, 끝 행, 시작 열, 끝 열) 순서대로 넣어서 병합시킬 범위를 정한다. 배열처럼 시작은 0부터이다.  
+=======================================================================
+CellStyle 천단위 쉼표, 금액
+CellStyle moneyStyle = workbook.createCellStyle();
+moneyStyle.setDataFormat(HSSFDataFormat.getBuiltinFormat("#,##0"));
+=======================================================================
+Header 행 생성하기
+
+// 해당 행의 첫번째 열 셀 생성
+Cell headerCell = headerRow.createCell(0); // 엑셀에서 열의 시작은 0 부터 시작한다.
+headerCell.setCellValue("부서번호");
+headerCell.setCellStyle(headerStyle);
+
+=======================================================================
+
+내용물 Cell 생성하기
+
+내용물은 DB에서 조회해온 empList에 있어서 반복문만 돌리면 된다.
+
+항상 Row를 먼저 만들고 → Cell을 만든다.
+
+=======================================================================
+
+★ request.setAttribute() 와 Model model.addAttribute(attributeName, attributeValue)는 똑같다.
+
+ModelAndView는 저장 역할과 View 페이지를 보여주는 기능이 되고, Model은 저장 역할만 가능하다.
+
+기존에는 Tiles나 접두어, 접미어로 컨트롤러에서 보냈으나, 이번의 엑셀 파일 다운로드는 컨트롤러로 보낸다.
+
+그래서 servlet-context.xml에서 클래스에 대한 Bean을 생성해주고, 해당 클래스의 Resolver를 만든다.
+→ 엑셀파일 다운로드는 View 페이지로 보낼 필요 없이 다운로드만 시켜주면 끝이여서 이와 같이 한다.
+→ 파일을 다운로드 해주는 컨트롤러를 View페이지로 생각하면 된다.
+
+0순위 컨트롤러 View Resolver / 1순위 Tiles View Resolver / 2순위 접두어,접미어 View Resolver
+
+▶ 컨트롤러에 리턴값을 가지고 servlet-context.xml에 가서 우선순위별로 적합한 View Resolver 패턴들을 찾아가서 맞는게 있으면 그 우선순위의 Resolver가 실행된다.
+
+=======================================================================
+
+■ ExcelDownloadView.java
+
+AbstractView 클래스를 상속받아서 만들어준다.
+
+메소드의 재정의(Override)여서 파라미터도 부모클래스와 맞춰줘야 한다.
+→ 부모클래스에서 model을 사용하기 때문에 컨트롤러에서도 ModelAndView가 아닌 Model을 사용한 것이다. 
+
+우리가 컨트롤러에서 Model에 다 넣어줬는데, 이것이 Map<String, Object> model에 다 들어가진다.
+
+
+

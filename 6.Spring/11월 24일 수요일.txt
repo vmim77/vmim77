@@ -1,0 +1,53 @@
+11월 24일 수업
+
+[ Arround Advice ]
+
+Before Advice: Pointcut이 실행되기 전에 작동한다. (인사관리에 접근하기 전에 로그인 유무검사)
+After Advice: Pointcut이 실행된 후 작동한다. (게시글을 작성하고 포인트를 상승시킨다.)
+
+▶ Arround Advice: Before Advice + After Advice
+
+시나리오: 인사관리와 통계차트는 직급(GradeLevel)이 있는 사람만 볼 수 있으며, 페이지 접근기록을 남긴다.
+→ 직급확인은 Before, 페이지 접근기록은 After
+
+▶ EmpController.java에서 empList와 chart 메소드를 포인트컷 설정해야 한다.
+→ 포인트컷이 되기위한 접두어는 'empManager_' 이다.
+
+▶ 포인트컷을 설정할때 접근제한자를 생략해도 public으로 간주한다.
+→ 왜냐하면 외부에서 특정메소드에 접근을 해야 하므로 접근제한자는 무조건 public 이어야 하기 때문이다.
+
+@Pointcut("execution(public * com.spring..EmpController.empManager_*(..) )")
+
+* 은 모든 것을 의미한다. (뭔가 있어야 함)
+.. 은 있거나 없음을 의미한다.
+
+▶ DB에 인사관리 메뉴 접속기록용 테이블 생성
+→ tbl_empManager_accessTime
+
+▶ 어드바이스 메소드 생성
+→ checkAuthority()
+
+※ before, after에서는 JoinPoint로 Pointcut으로 선정된 메소드들을 선택할 수 있고, Around는 ProceedingJoinPoint joinPoint으로 선정된 메소드들을 선택할 수 있다.
+→ 해당 메소드의 파라미터를 가져오는 법은 JoinPoint.getArgs()[0]; 이다.
+
+★ joinPoint.proceed(); 를 하면 주업무인 Pointcut인 메소드를 실행되도록 한다.
+→ 예제에서는 로그인을 했으며, gradelevel이 10 이상이어야 주업무 메소드가 실행된다.
+→ .proceed(); 는 리턴타입으로 Object가 나오는데, Pointcut 메소드의 리턴타입이 리턴된다.
+
+★ Pointcut인 메소드의 리턴타입이 동일한 것이 관리하기에 편하다.
+→ ModelAndView와 String으로 Pointcut들의 리턴타입이 서로 다르다면 if절을 여러번 걸어야 한다.
+→ 그래서 Pointcut인  empManager_empList와 empManager_chart의 리턴타입을 String으로 바꿔준다.
+
+▶ 주업무가 돌다가 실패하더라도 반드시 DB에 기록을 남겨준다.
+→ 즉 try&catch문에서 finally를 추가한다.
+
+★ 클라이언트의 IP를 추출하는 법은 request.getRemoteAddr(); 이다.
+
+
+▶ Around 작동순서
+Before(로그인 유/무, gradelevel 검사) → Pointcut 메소드 실행 → After(접속기록 DB에 삽입) → View 페이지로 이동
+
+
+
+
+

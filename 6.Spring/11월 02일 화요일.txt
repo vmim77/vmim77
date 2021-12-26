@@ -1,0 +1,187 @@
+11월 02일
+
+[ 클래스 다이어그램 ]
+
+★ 세미프로젝트에 자기가 만든 것은 다이어그램 만들 것
+★ 파이널프로젝트에도 UML 추가할 것
+
+▶ 클래스간의 관계
+
+▶ Realization (실체화)
+
+인터페이스를 구현하는 클래스가 인터페이스 방향으로 ---▷ 표시를 이용하여 그린다.
+실체화는 미완성 메소드를 클래스가 재정의하여 완성했음을 알린다.
+
+AbstractController 같은 경우는 InterCommand 를 구현한다고 선언했으나, InterCommand의 execute 메소드를 재정의(Overriding) 을 하지 않았으므로 미완성 클래스이다.
+
+▶ Generalization (일반화) 
+
+부모와 자식 관계는 ㅡ▷ 표시를 이용하여 그린다. (자식에서 부모방향으로)
+
+원래는 부모클래스에서 미완성된 메소드를 자식클래스에서 재정의를 표현해줘야 하는데, UML에서는 굳이 이렇게 적어줄 필요가 없다. 왜냐하면 ㅡ▷ 표시만 봐도 부모/자식 관계임을 알 수 있으니 미완성 메소드를 적어줄 필요없이 알아서 자식에서 재정의 된다는 것을 알고 있다.
+
+예시에서는 부모가 인터페이스의 메소드를 오버라이딩 하지 않아서 미완성 클래스이니 자식에서 꼭 재정의를 할 것임을 아니깐 굳이 execute()를 또 적어줄 필요가 없다.
+
+InterCommand -- implements -- AbstractController -- exetend -- IndexController
+
+
+▶ Directed Association (직접연관)
+
+Association은 일반적으로 어떤 클래스의 어떤 필드가 다른 클래스의 객체를 참조하여 사용 하는것을 말한다.
+
+예시)
+
+public class User {
+private List<Address> addresses;
+}
+
+- User 클래스의 addresses 필드는 Address 클래스를 참조하고 있다.
+- 즉, addresses 필드에는 Address 객체가 들어오고 있다.
+- 그래서 User 클래스에서 Address 클래스 방향으로 ㅡ> 도식을 그려준다.
+
+MyMVC 같은 경우는 프로퍼티스 기법을 사용해서 FrontController가 모든 응답(서블릿 역할)을 다 해주고 있다.
+
+FrontController의 cmdMap 이라는 필드가 있는데, 이 Map 속에는 URL 주소를 키값으로 서로 매핑된 객체들이 value값으로 지정되어있다. - Command.properties에 모두 기술되어있다.
+
+- FrontController는 스테레오타입에 Servlet을 명기해준다.
+- cmdMap 필드에는 MyMVC 프로젝트의 모든 클래스가 다 들어오고 있다.
+- 즉 FrontController 방향에서 모든 클래스 방향으로 ㅡ> 도식을 그려준다.
+
+★ Association과 Directed Association의 차이는 화살표가 의미하는 navigability(방향성)인데 이것에 따라 참조 하는 쪽과 참조 당하는 쪽을 구분한다. 두 번째 다이어그램은 User에서 Address 쪽으로 화살표가 있으므로 User가 Address를 참조하는 것을 의미한다.
+
+▶ Dependency (의존)
+
+의존은 ----> 식으로 점선으로 표시한다.
+
+MemberListAction 클래스는 반드시 MemberDAO가 있어야 제작동을 할 수 있다 -- 의존관계
+- 회원정보를 보여주려면 반드시 MemberDAO가 있어야 한다.
+
+또한 MemberDAO는 반드시 MemberVO가 있어야 한다. -- 의존관계
+
+마지막으로 MemberDAO는 비밀번호를 암호화해줘야하기 때문에 Sha256 클래스에 의존한다. -- 의존관계
+
+
+▶ Aggregation(집합연관)
+
+ㅡ◇
+
+▶ Composition(합성연관)
+
+ㅡ◆
+
+ProductDAO ㅡ◇ CartVO
+
+MemberDAO에 있는 private AES256 aes; 필드를 참조할 것
+
+CartVO에 있는 private ProductVO prod; 필드를 참조할 것
+
+
+이 클래스 둘 다 필드에 클래스타입의 필드가 있다.
+
+이제 꽉찬 다이아몬드냐 빈 다이아몬드냐를 선택하는 기준은 
+
+★ MemberDAO 생성자에서 AES256 필드에 값을 집어넣는데, 이렇게 생성자에서 클래스타입의 필드에 값을 집어 넣어주면( new AES256(key) ) ㅡ◆ 이다.
+
+★ 마찬가지로 CartVO에서는 private ProductVO prod;  필드에 값을 생성자에서 넣어주지 않으니, ㅡ◇ 표시를 한다.
+- 객체생성이 아닌 기존의 값을 넣으면 ( new 로 객체를 만드는게 아닌 이미 만들어진 것을 넣는 것이라면 )
+빈 다이아몬드를 쓴다.
+
+합성연관(ㅡ◆) 같은 경우에는 MemberDAO 객체가 메모리에서 사라지면 필드인 AES256 또한 같이 소멸된다. ( 죽으면 같이 죽는다. )
+
+허나, 집합연관(ㅡ◇)인 CartVO 객체가 메모리에서 사라진다 하더라도 이미 다른 곳에서 값이 넣어진 ProductVO prod;는 사라지지 않는다.
+( 죽어도 같이 죽지 않는다. 독립적이다 )
+
+
+★★★★★★ https://kyoun.tistory.com/100 - 클래스 다이어그램 관계 설명 
+
+=======================================================================
+
+[ 페이징 처리 ] 
+
+■ #58 글목록
+
+▶ #114. 페이징 처리를 한 검색어가 있는 전체 글목록 보여주기
+
+1. 총 게시물 건수(totalCount) 구하기
+==> 만약 검색을 했다면, 검색타입과 검색어도 넘겨서 조회해야 한다. ( 입니다. 를 검색했으면 걔네만 또 다 가져와서 페이징 처리를 해야함 )
+==> 검색을 안했다면 전체글을 다 가져와서 페이징 처리를 해야한다.
+
+<select id="getTotalCount" parameterType="HashMap" resultType="int">
+select count(*)
+from tbl_board
+where status = 1 
+<if test='searchTyep != "" and searchWord != ""'>
+   and lower( ${searchType} ) like '%' || lower( #{searchWord} ) || '%'
+</if>
+</select>
+
+
+※ mapper에서 논리연산자
+같다 - eq, == / 다르다 - neq, != / AND - and 
+
+#### 중요 ####
+HashMap 타입으로 매개변수를 받아온 것을 꺼내서 사용할때 
+1. 데이터로 사용할때는 #{key명} 이고,
+2. 식별자(테이블명, 컬럼명)로 사용할때는 ${key명} 이고,
+3. myBatis 에서 제공하는 if 엘리먼트나 choose 엘리먼트 안에서 사용할때는 그냥 <if test="key명"> <when test="key명"> 으로 사용한다. 
+
+
+2. 총 페이지수 구하기 
+// 만약에 총 게시물 건수(totalCount)가 127개 이라면 
+// 총 페이지수(totalPage)는 얼마이여야 하는가? -- 13페이지
+// Math.ceil( (double) totalCount/sizePerPage )
+totalPage = (int) Math.ceil( (double)totalCount/sizePerPage ); // (double)127/10 ==> 12.7 ==> Math.ceil(12.7) ==> (int) 13.0 => 13
+
+※ Math.ceil( )의 파라미터는 double 타입이 들어와야 한다.
+
+3. str_currentShowPageNo 값 설정하기
+
+-- null이라면 게시판에 처음 들어온 경우이니 currentShowPageNo에 1을 준다.
+
+-- 유저가 URL을 장난친 경우 try & catch 문을 돌려서 NumberFormatException에 걸리나 안 걸리나 확인한다.
+
+-- currentShowPageNo가 1보다 작거나, totalPage보다 크다면 1을 준다.
+
+
+4. 가져올 게시글의 범위를 구한다 -- 공식!
+
+startRno = ( ( currentShowPageNo - 1 ) * sizePerPage ) + 1;
+endRno = startRno + sizePerPage - 1;
+
+
+5. RNO도 맵에 넣어준 후에 이제 페이징처리를 해서 DB에서 글목록을 가져온다.
+
+▶ #118 ~ #120
+
+<select id="boardListSearchWithPaging" parameterType="HashMap" resultType="com.spring.board.model.BoardVO">
+select seq, fk_userid, name, subject, readCount, regDate, commentCount
+from
+(
+   select row_number() over(order by seq desc) AS rno
+   , seq, fk_userid, name, subject
+   , readCount, to_char(regDate, 'yyyy-mm-dd hh24:mi:ss') as regDate
+   , commentCount
+   from tbl_board
+   where status = 1
+   <if test='searchType != "" and searchWord != ""'> <!-- 값이 없다면 쌍따옴표로 나올테니 홑따옴표로 감싸준다. -->
+      and lower( ${searchType} ) like '%' || lower( #{searchWord} ) || '%'
+   </if>
+) V
+where rno between 1 and 10
+</select>
+
+=======================================================================
+
+[ 페이지바 만들기 ]
+
+[맨처음] -> currentShowPage가 1인 URL로 이동시킨다.
+[이전] -> currentShowPage = (page-1)
+	ex) 11페이지~20페이지는 pageNo가 11이다. -->첫번째 블록인 1~10페이지로 보내진다.
+
+pageNo는 ((currentShowPageNo - 1)/blockSize) * blockSize + 1; 의 공식으로 컨트롤러에 들어오면 설정된다.
+
+
+이후에 반복문을 거쳐서 블록별 페이지 번호를 찍어준다. 반복문을 탈출했다면 다음 블록의 시작값이 되어있다.
+
+[다음] -> 반복문을 탈출해서 나왔다면 다음 블록의 시작값이 pageNo에 들어가있다. 그러므로 currentShowPageNo = pageNo로 해주면 다음 블록으로 이동한다.
+[마지막] -> currentShowPageNo = totalPage

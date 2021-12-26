@@ -1,0 +1,126 @@
+11월 05일 수업
+
+[ 계층형 쿼리 - 답글과 원글 정렬시키기 ]
+
+start with employee_id = 104 
+- 104번부터 시작한다.
+
+connect by prior manager_id = employee_id
+
+104번의 manager_id는 103번인데, 그 다음에 나오는 것은 employee_id가 103번인게 온다.
+→ 103번이 employee_id인 행과 연결(connect by prior) 시킨다.
+→ 100번의 manager_id는 null 이여서 null이 employee_id인 행과 연결할 수 없으니 끊긴다.
+
+▶ fk_seq가 0은 원글이다. 그러므로 start with fk_seq = 0으로 원글부터 시작을 한다.
+→  connect by prior seq = fk_seq 로 내 글번호가 fk_seq의 값인 것들과 연결을 한다.
+
+예시) "이순신 입니다1" 글은 fk_seq는 0이다. 그러면 connect by prior seq = fk_seq는 다음과 같이 된다.
+
+connect by prior 1(seq) = fk_seq 
+→  fk_seq가 1인 것과 연결을 하려하지만 없기에 끊긴다. 그러므로 다음 행으로 넘어간다.
+
+
+계층형 쿼리로 연결을 시켰지만 정렬이 필요하다.
+
+또한 답변글들이 seq는 최신글이지만, 원글에 밑으로 내려와야하기 때문에 groupno를 기준으로 정렬을 해야한다.
+→ 답변글이라면 원글과 groupno가 같아진다.
+→ 최신 원글이라면 groupno는 max + 1 값이므로 위로 간다.
+
+1차 정렬은 groupno로 하고 2차 정렬은 같은 그룹내에서 또 한 번 정렬시켜야 한다.
+→ 원글이 가장 오래되어져서 seq가 가장 낮다.  그래서 seq asc를 하면 된다.
+
+★ order siblings by는 계층구조를 유지하면서 order by를 쓸 때 사용한다.
+(※ start with, connect by prior가 나올때 order by는 order siblings by로 한다.)
+
+
+▶ #148번에 SQL문을 고쳐준다.
+
+▶ 이후에 list.jsp에 depthno에 따라서 효과를 주어야 한다.
+→ depthno가 0이면 원글, 1이상이면 답글
+
+답변글이 아닌 원글인 경우 (1. 댓글있을때 2. 댓글없을때)
+답변글인 경우(1. 댓글있을때 2. 댓글없을때)
+
+▶ view.jsp에서 답변글쓰기 버튼을 누르면 GET방식으로 넘길때 원글의 제목도 같이 넘겨서, add 폼에서 자동으로 제목이 입력되도록 한다.
+
+add.action에서는 view단 페이지인 add.tiles1에 원글의 제목을 보내고, 제목이 담기는 input 태그에 value로 넣는다.
+→  원글쓰기면 value가 없는 인풋태그를, 답글쓰기면 value가 있는 인풋태그를 주도록 <c:if>를 사용한다.
+
+<c:if test="${requestScope.fk_seq eq ''}">
+<input type="text" name="subject" id="subject" size="100" />
+</c:if>
+						
+<c:if test="${requestScope.fk_seq ne ''}">
+<input type="text" name="subject" id="subject" size="100" value="${requestScope.subject}" />
+</c:if>
+
+====================================================================================
+
+1번째 보완사항 -  특정 검색어로 검색을 하면 이전글보기와 다음글보기에는 검색된 결과내의 글들만 나와야한다.
+
+■ BoardController.java - view.action - getView
+
+mapper.xml에는 getView인 SQL문의 조건절에 검색타입과 검색어가 없다. 그래서 1번째 보완해야할 사항이 나타난 것이다.
+
+▶ 검색되어진 것 중에서 이전글보기와 다음글보기가 작동해야한다.
+→ 그래서 and lower(subject) like '%' || lower('java') || '%' 구문이 id=getView인 SQL문에 들어가야한다.
+
+→ 허나 검색을 안하고 볼 수도 있기때문에 또 조건이 들어가야 한다.
+
+<if test="">
+and lower(subject) like '%' || lower('java') || '%'
+</if>
+
+
+■ #62에 Map에 담아줄때 검색타입과 검색어, seq도 같이 넣어줘야한다.
+
+글목록보기에서 친 검색타입과 검색어 → 글1개를 보여주는 곳으로 넘겨줘야함
+
+list.jsp에 있는 goViewFrm을 사용한다. 
+→ 글제목을 하나 클릭하면 goView( ) 함수를 호출한다.
+→ 이 함수는 goViewFrm 폼태그를 view.action으로 전송시켜준다.
+→ 현재는 글번호와 돌아갈 페이지만 있다. 여기에 추가로 검색어와 검색타입을 넣어서 보내준다.
+
+▶ 아직은 미완성이다. 왜냐하면 view.jsp에서 이전글제목이나 다음글제목을 클릭하면 다시 searchType과 searchWord를 넘겨줘야하기 때문이다.
+→ 그래서 view.action에서 mav.addObject("searchType", searchType);와 mav.addObject("searchWord", searchWord);를 넘겨준다.
+→ 만약에 없었다면 ""이 들어가 있다.
+
+<div style="margin-bottom: 1%;">이전글제목&nbsp;:&nbsp;<span class="move" onclick="javascript:location.href='view.action?seq=${boardvo.previousseq}&searchType=${requestScope.searchType}&searchWord=${requestScope.searchWord}'">${boardvo.previoussubject}</span></div>
+
+<div style="margin-bottom: 1%;">다음글제목&nbsp;:&nbsp;<span class="move" onclick="javascript:location.href='view.action?seq=${boardvo.nextseq}&searchType=${requestScope.searchType}&searchWord=${requestScope.searchWord}'">${boardvo.nextsubject}</span></div>
+
+▶ lag(seq, 1) over(order by seq asc) - seq를 오름차순으로 정렬했을때 한 칸 위의 seq를 가져와준다. (★ 자기보다 위에있는 행)
+▶ lead(seq, 1) over(order by seq asc) as nextseq - seq를 오름차순으로 정렬했을때 한 칸 아래의 seq를 가져와준다.(★ 자기보다 아래있는 행)
+
+====================================================================================
+
+2번째 보완사항 -  또한 특정 검색어로 검색을 하고서 이전글이나 다음글을 클릭하고 검색된결과목록보기를 하면 처음페이지로 돌아가버린다.
+
+마찬가지로 이전글보기, 다음글보기를 누르면 검색어, 검색타입, 이전글(or다음글)번호만 넘어가지, gobackURL은 넘어가질 않는다.
+
+※ 컨텍스트패스까지만 적고 그 뒤에 아무것도 안적으면 web.xml에 <welcom-file-list>로 설정한 것이 나온다.
+예시) localhost:9090/board → localhost:9090/board/index.action으로 이동하게 됨
+
+URL로 gobackURL을 넘기면 끊기기 때문에 &(엠퍼샌드)를 치환시켜서 보내주고, 다시 치환시켜줘야한다.
+
+★ 폼태그로 gobackURL을 넘기면 잘 넘어가지만, GET방식으로 전송하면 짤려버린다.
+
+직접달면 gobackURL은 searchType=subject까지만 나오고, 값중에 있는 &가 구분자로 작동하여 뒤에 검색어 앞에서 끊어져버린다.
+→ &gobackURL=/list.action?searchType=subject  / &searchWord=java
+
+
+<c:set var="v_gobackURL" value='${ fn:replace(requestScope.gobackURL,"&"," ")}' />
+
+URL주소에는 공백이 없기때문에 공백으로 치환을 해준다.
+
+이후에 view.action 컨트롤러에서 다음과같이 한다.	
+String gobackURL = request.getParameter("gobackURL");
+
+if(gobackURL != null & gobackURL.contains(" ")) {
+gobackURL = gobackURL.replaceAll(" ", "&");
+}
+
+→ 문자열.contains("문자") 은 해당 문자열에 찾고자하는 문자가 있으면 true, 없으면 false를 준다.
+
+
+

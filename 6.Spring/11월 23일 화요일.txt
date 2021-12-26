@@ -1,0 +1,52 @@
+11월 23일 수업 
+
+[ 공공 데이터 ] 
+
+▶ #193
+
+직원목록 메뉴에 적용된 Tiles2에 기상청 날씨정보를 받아와서 출력한다.
+
+※ 공공데이터는 대부분 XML 형식으로 되어있다. (JSON도 있긴 하지만 XML이 많은 추세)
+
+★ 본인의 WAS 기준으로 기상청은 외부이다. 외부에서 공공 데이터 XML을 가져오는데 반드시 외부의 사이트가 안전하다고 할 수는 없으니 XSS 공격을 막아줘야 한다.
+→ 현재 브라우저에서 Ajax로 외부의 XML을 직접 땡겨오는 것은 막아져 있다.
+→ 내 IP와 연결하고자하는 기상청IP는 다르기 때문에 우리가 배운대로 외부URL로 가서 Ajax로 가져올 수 없도록 브라우저가 설계되어있다.
+→ 그래서 기상청 사이트가 마치 내 것인냥 살짝 바꾸면 출력이 된다.
+
+■ EmpController.java
+
+weatherXML() 메소드 생성
+
+■ weatherXML.jsp 생성
+
+<c:import url="http://www.kma.go.kr/XML/weather/sfc_web_map.xml" charEncoding="UTF-8" />
+→ 이것은 현재 외부에 있는 사이트이다.
+
+이렇게 import를 하는 사이트를 하나 만들어 놓고, sideinfo에서 http://localhost:9090/board/opendata/weatherXML.action 를 가져오면 나의 사이트(내부 사이트)를 가져오는 것이니 브라우저에 의해 막아지지 않는다.
+
+
+■ tiles2 - sideinfo.jsp
+
+시계 하단부에 div 태그 생성후 그곳에 출력을 한다.
+
+XML의 제일 꼭대기에 있는 엘리먼트를 찾아야 한다.
+→  $(xml).find(":root");
+→ 가지고 온 XML에서 근원을 찾는 것이다.
+
+★ 허나 XML에 공백이 있다면 작동을 제대로 안하니 반드시 제거시켜줘야한다.
+→ 그래서 weatherXML.jsp 파일에서 trimDirectiveWhitespaces="true" 를 넣어야 한다.
+→ <%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8" trimDirectiveWhitespaces="true" %>
+
+※ JSON은 키만 알면 찾기 편하지만, XML은 최상위 태그를 찾고 타고타고 가야해서 불편하다.
+
+이제 weather 태그의 자식 태그인 local 태그들을 반복으로 찍어줘야한다.
+
+▶ 1시간마다 showWeather() 함수를 자동으로 작동시켜서 기상청 내용을 반영시켜줘야한다.
+→ setTimeout 을 사용해서 자동적으로 함수를 호출시킨다.
+
+▶ setTimeout(function(){}, 시간주기);
+
+※ 자바는 크론을 사용해서 일정 시간에 메서드가 작동되게 할 수 있고, 자바스크립트는 setTimeout을 사용한다.
+
+

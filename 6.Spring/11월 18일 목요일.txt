@@ -1,0 +1,40 @@
+11월 18일 
+
+[ 차트 그리기 ]
+
+컨트롤러에서부터 mapper까지 부서명별 인원수 및 퍼센티지를 가져오는 메소드를 생성한다.
+
+List<Map<String, String>> deptnamePercentageList = sqlsession3.selectList("hr.employeeCntByDeptname");
+
+리턴타입이 HashMap 이니 mapper에서는 resultType이 아닌 resultMap을 쓴다.
+
+리턴받은 List<Map<String,String>> 을 컨트롤러에서 GSON을 이용하여 JSON 형태의 문자열로 변경시켜준다.
+(※ GSON은 자바→자바스크립트, 자바스크립트→자바 객체형태로 바꿔준다.)
+
+JsonArray a = new JsonArray();
+JsonObject a = new JsonObject();
+
+※ GSON에서 사용하는 JSON 객체와 JSON 배열은 Json* 로 표기해서 org.simple.json을 import해야한다.
+
+※ org.json의 JSONObject는 값을 넣는게 .put( )이지만, org.simple.json의 JsonObject는 .addProperty( )를 사용하여 값을 넣는다.
+
+▶ 반복문으로 Json 객체를 하나씩 찍어내고 jsonArr에 넣는다.  반복문이 끝난 이후에는 gson.toJson( )을 이용하여 jsonArr를 JSON 형식의 문자열로 바꾸어준다.
+
+★ 퍼센티지는 자바에서 String 타입으로 넘어오는데, 반드시 자바스크립트에서는 Number( )를 이용하여 정수형으로 변경시켜줘야 한다.
+→ Number를 붙여야 0.93 식으로 나온다. 안 붙이면 .93 으로 나온다.
+
+
+====================================================================================
+
+[ 부서별 성별 통계 ]
+
+column with drildown 사용한다.
+
+$.ajax의 success 콜백함수에 $.ajax를 한 번 더 넣는 것이다.
+
+부서별 통계를 재활용해서 맨 처음에 띄워주고, 부서별 통계차트에서 특정 막대를 클릭하면 부서별 성별 통계를 보여준다.
+→ ajax 안에 또 다른 ajax가 있는 것이다.
+→ 바깥 ajax는 부서별 인원통계, 안쪽 ajax는 부서별-성별 인원통계
+
+
+

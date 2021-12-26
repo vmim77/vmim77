@@ -1,0 +1,83 @@
+11월 11일 수업
+
+[ 파일첨부 댓글 ]
+
+■ view.jsp 
+
+댓글폼 - 파일첨부 input태그 추가
+
+댓글폼 전송버튼 누르면 유효성검사 마치고 ajax 함수 호출
+
+▶ #169 첨부파일 댓글 함수 생성하기
+- Ajax로 파일 업로드하기(Ajaxform)
+→ 기존에는 Ajax가 아닌 컨트롤러였기에 MultipartRequest를 사용함
+→ jquery.form.min.js 파일이 필요하다.
+→ layout-tiles1.jsp & layout-tiles2.jsp 에 해당 js 파일이 include 되어있다.
+
+★ $.ajax 가 아닌 폼선택자.ajaxForm({}); 로 적어야 한다.
+→ $("form[name=addWriteFrm]").ajaxForm({});
+
+Ajax로 데이터를 전송할때 폼태그를 하나하나 잡아줘도 괜찮지만, serialize를 사용하면 편하다. (※ jQuery 제공기능)
+→ ★ serialize는 반드시 폼내부의 태그들에 name이 꼭 있어야한다.
+→ var form_data = $("form[name=addWriteFrm]").serialize();
+→ 자동적으로 전송할 데이터에 key값은 태그들의 name, value는 해당 name 태그의 value 값이 들어가진다.
+→ data:form_data 로 ajax에 작성한다.
+
+★ 파일을 첨부하기때문에 method는 "POST"여야하고, enctype을 폼의 속성에 작성해야하는데 Ajax라면 Ajax 내부에 적어도 된다.
+→ type:"POST",
+→ enctype:"multipart/form-data",
+
+
+■ Controlloer에서 이제 파일첨부가 없는 댓글쓰기 메소드는 없애고, 파일첨부가 있는 댓글쓰기 메소드만 만든다.
+→ 여기서는 파일첨부가 있냐 없냐를 구분해줘야한다.
+
+▶ tbl_comment에는 파일첨부 관련 컬럼이 없으니, fileName, orgFilename, fileSize 컬럼을 추가한다.
+
+▶ CommentVO에는 attach, fileName, orgFilename, fileSize 필드를 추가한다.
+
+★ 항상 VO의 필드명 == 폼태그의 name == DB의 테이블 컬럼명 3개가 똑같아야 한다.
+
+Controller에서는 폼태그의 name과 똑같은 파라미터에있는 commentVO에 자동으로 set이 되어진다.
+→ 그중에서 attach를 꺼내서 attach.isEmpty( ) 로 첨부파일이 있나 없나를 확인한다.
+
+나머지 파일첨부 로직은 기존의 첨부파일이 있는 글쓰기와 똑같다.
+→ attach에서 원본파일명 꺼내오고, 새로운 파일명 만들고, attach를 이용하여 파일 WAS의 DISK에 저장해주고
+
+▶ mapper에서는 넘어온 commentvo에서 fileName이 있냐 없냐에 따라서 서로 다른 SQL문을 돌리게 한다.
+→ 파일첨부가 없는 댓글쓰기는 seq, fk_userid, name, content, regDate, parentSeq, status
+→ 파일첨부가 있는 댓글쓰기는 seq, fk_userid, name, content, regDate, parentSeq, status, fileName, orgFilename, fileSize
+
+※ 파일첨부가 없었다면 Controller에서도 !attach.isEmpty() 조건절에 떨어지지 않아서 fileName은 null이 될 것이다.
+
+=======================================================================
+
+▶ 이제 파일이 첨부된 댓글에도 표시를 해줘야한다.
+
+댓글들을 페이징처리해서 가져오는 mapper를 수정해준다.
+
+select name, content, regDate, fileName, orgFilename, fileSize
+from 
+(
+    select row_number() over(order by seq desc) as rno
+    , name, content
+    , to_char(regDate, 'yyyy-mm-dd hh24:mi:ss') AS regDate
+    , NVL(fileName, '') AS fileName, NVL(orgFilename, '') AS orgFilename, NVL(to_char(fileSize), '') AS fileSize
+    from tbl_comment
+    where status = 1 and parentSeq = #{parentSeq} 
+) V
+where rno between #{startRno} and #{endRno}  		
+
+fileName과 orgFilename은 첨부된 파일이 없다면 null일테니 저렇게 넣어준다.
+→ fileSize는 number 타입인데 ''을 넣으려하면 에러가 나니깐 받아올때 to_char(fileSize)로 해준다.
+
+▶ 이제 view.jsp에서 반복문으로 댓글을 찍어주는 부분에 원본파일명과 파일사이즈를 넣는 <td>도 넣어준다.
+
+goViewComment(CurrentShowPageNo)					
+→ html += "<td>"+item.orgFilename+"</td>";
+→ html += "<td>"+ Number(item.fileSize).toLocaleString('en') +"</td>";
+
+회원으로 로그인을 했다면 orgFilename에 <a>를 걸어진게 보여지고, 비로그인이라면 <a>태그가 없는 것이 보여진다.
+
+
+▶ 댓글 첨부파일 다운로드 받기 - requiredLogin_downloadComment
+

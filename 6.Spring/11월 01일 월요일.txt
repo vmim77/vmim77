@@ -1,0 +1,187 @@
+11월 01일 수업 
+
+▶ 오전 수업
+
+[ 검색 ]
+
+검색에 자동글완성 기능도 추가할 예정이다.
+
+▶ #101	
+
+먼저 검색용 폼을 생성한다. (list.jsp)
+
+※ <select> 태그에서 <option>에 value를 안줬다면, <option> 태그 사이에 텍스트가 value가 된다.
+
+▶ #102
+검색버튼을 클릭하면 자기자신인 list.action으로 다시 전송시킨다. 이제 select where을 통해서 검색타입과 검색어를 넘긴 목록을 조회해서 보내준다.
+
+if(searchType == null || (!"subject".equals(searchType) && !"name".equals(searchType)) )
+- 검색타입이 null 이거나, 글제목/성명이 아닌 경우
+
+if(searchWord == null || "".equals(searchWord) || searchWord.trim().isEmpty() )
+- 검색어가 null 이거나, 아무것도 없거나, 공백인 경우
+
+▶ 검색이 완료되서 페이지가 전환되어도 사용자가 입력한 검색대상 컬럼과 검색어를 페이지에는 유지시켜서 보여줘야 한다.
+
+
+▶ #103 ~ #105 서비스 ~ mapper
+
+mapper.xml에 이제 검색타입과 검색어를 넣어줘야하는데 있을 수도 있고 없을 수도 있다. 그래서 myBatis를 이용해서 설정을 해준다.
+
+#### 중요 #### 
+HashMap 타입으로 매개변수를 받아온 것을 꺼내서 사용할때 
+1. 데이터로 사용할때는 #{key명} 이고,
+2. 식별자(테이블명, 컬럼명)로 사용할때는 ${key명} 이고,
+3. myBatis 에서 제공하는 if 엘리먼트나 choose 엘리먼트 안에서 사용할때는 그냥 <if test="key명"> <when test="key명"> 으로 사용한다. 
+
+▶ GET방식을 악용해서 사용자가 장난을 쳤거나, 검색어를 입력 안했다면 둘 다 ""이 넘어올 것이다.
+
+★ myBatis에서 제공하는 if 엘리먼트에서는 HashMap의 값을 꺼내서 쓸 때는 그냥 key명으로 쓴다.
+
+<if test='searchType != "" and searchWord != ""'> <!-- 값이 없다면 쌍따옴표로 나올테니 홑따옴표로 감싸준다. -->
+   and lower(${searchType}) = lower(#{searchWord})
+</if>
+- searchType은 컬럼명인 subject, name이 될 수 있으니 ${key명}으로 쓴다.
+- 검색타입과 검색어는 대문자와 소문자가 섞여 있을 수도 있으니 lower( )로 모두 소문자로 통일시켜준다.
+
+★ 또한 myBatis의 조건절에서는 and 는 &&이 아니라 and로 적어줘야 한다.
+
+
+▣ 검색타입은 subject, name이여야 하면서, 검색어가 공백이 아닌거라면 검색을 해준다.
+- 사용자가 URL에서 검색타입을 임의로 바꿨다면 ""로 바꿔준다.
+
+mapper에서는 검색타입과 검색어가 ""이 아니라면 where절에 넣어서 검색해준다.
+
+
+★★★★★
+폼태그안에 input 태그가 한 개밖에 없다면 엔터만 쳐도 유효성 검사를 거치지 않고 그냥 submit이 되어진다. 그래서 이것을 막기 위해서 input 태그를 하나 더 넣어야 하는데, 중요한 것은 추가되는 input 태그는 hidden으로 감추는게 아니라 display: none;으로 감춰야 한다.
+
+※ keyup, keydown에서 엔터의 키코드는 13이다.
+
+// 검색시 검색조건 및 검색어 값 유지시키기
+// 무언가가 검색됐다면 paraMap에 넣어뒀다.
+if( ${not empty requestScope.paraMap} ) { 
+   $("select#searchType").val("${requestScope.paraMap.searchType}");
+   $("input#searchWord").val("${requestScope.paraMap.searchWord}");
+}
+
+====================================================================================
+
+[ 검색어 자동완성 기능 ]
+
+▶ #106 ~ #112
+
+글 검색 input 태그 하단에 자동완성 창을 만들어준다.
+- div#displayList
+
+#searchWord에 keyup이 되면 해당 div#displayList를 .show( )로 다시보여준다.
+
+보여주긴 보여주는데 만약 검색어의 길이가 0이되면 다시 div#displayList를 .hide( )를 시켜준다.
+
+$("input#searchWord").keyup(function(){
+   var wordLength = $(this).val().trim().length;
+   // 검색어의 길이를 알아온다.
+
+   if(wordLength == 0){
+     $("div#displayList").hide();
+   }
+   else{
+     $("div#displayList").show();
+   }
+});
+
+
+▶ 이제 검색어 목록을 띄워줘야하는데 페이지가 바껴서는 안되니 ajax로 처리를 해준다.
+
+■ BoardController.java
+
+Ajax 처리를 해야하니 @ResponseBody 어노테이션 추가
+produces="text/plain;charset=UTF-8" 를 추가하여 한글이 깨지는 것을 방지
+
+▶ # 111
+
+select distinct name -- 똑같은 이순신을 중복해서 4번이나 보여줄 필요가 없다.
+from tbl_board
+where status = 1 and lower( name ) like '%' || lower( '이' ) || '%'
+order by seq desc
+/*
+ORA-01791: not a SELECTed expression
+01791. 00000 -  "not a SELECTed expression"
+*/
+
+▶ select 되어진 행의 결과물에서 중복된 행이 1번만 나오도록 하려면 select distinct 를 사용하면 된다.
+
+★ select 문에서 distinct 와 order by 절을 함께 사용할때는 조심해야 한다. select 문에 distinct 가 있는 경우 order by 절에는 select 문에서 사용된 컬럼만 들어올 수 있다. 또는 select 문에 distinct 가 있는 경우 order by 절을 사용하지 않아야 한다.
+
+★ myBatis에서 != 는 neq로 쓴다. == 는 eq , &&는 and
+
+▶ # 112 
+
+검색된게 없을 수도 있다. 그러므로 넘겨준 JSONArray의 길이를 파악해서 있다면 찍어줘야한다.
+
+if(json.length > 0){
+   $.each(json, function(index, item){
+								
+   });
+}
+
+★ javascript substring, substr 의 차이
+문자열.substring(A, B) 은 문자열의 A부터 B의 앞 까지만 읽어오는 것이고, 문자열.substr(A, N)은 문자열의 A부터 N 글자수 만큼을 읽어오는 것이다.
+
+
+※ <input> 태그의 size 속성은 <input> 요소의 너비를 문자수(in characters) 단위로 명시합니다.
+※ maxlength 속성을 사용하면, <input> 요소에서 허용되는 최대 문자수를 명시할 수도 있습니다.
+
+
+
+▶ #113  이제 검색목록에서 원하는 검색어를 클릭하면 그 값을 검색해줘야한다.
+
+"<span style='cursor: pointer;' class='result'>"+result+"</span><br>";
+==> 나오는 자동완성 검색어들에게 class="result"를 준다.
+
+▶ 스크립트내에 자동완성 검색어들을 찍어줬기때문에 확실히 잡기위해서는 이벤트핸들러를 다음과 같이 써야한다.
+$(document).on("click", ".result", function(){});
+
+$(document).on("click", ".result", function(){
+   var word = $(this).text();
+   $("input#searchWord").val(word); // 클릭한 자동완성 검색어를 검색어 input 태그에 넣어준다.
+   $("div#displayList").hide(); // 원하는 것을 클릭했으니 검색결과를 숨겨준다.
+   goSearch(); // 그리고 원하는 것으로 검색시켜준다.
+});// end of $(document).on("click", ".result", function(){})------------------------
+
+====================================================================================
+▶ 오후 팀플
+====================================================================================
+
+﻿
+★ 파이널 프로젝트에서 한 팀원의 pom.xml을 그냥 붙여넣기 하면 안된다.
+==> 왜냐하면 groupId, artifactId, name 등이 다를 수 있기 때문이다.
+==> 또한 프로젝트 이름이 다르니 board 프로젝트의 pom.xml도 그대로 붙여넣기 해서는 안된다.
+==> 붙이기 전에 groupId, artifactId, name 등을 모두 확인하고 붙여넣어야 한다.
+
+
+※ 추후에 파이널 프로젝트에 들어가면 mapper에 들어가는 xml은 프로젝트 팀원별 각자 한 개씩 만들어야 한다.
+==> 각 팀원의 "이름.xml" 식으로 여러 개를 만든다.
+==> mapper 파일(*.xml)은 여러 개를 만들 수 있다.
+==> 패키지는 동일하게 써야한다.
+
+※ 나중에 파이널 프로젝트 하실때 자기만의 컨트롤러 패키지 만들면 충돌 안 일어난다.
+
+1. 팀장뽑기
+2. 주제 - LMS
+3. 벤치마킹 사이트 - 부천대학교
+
+깃허브 
+
+1. 다이어그램 먼저 그리기? 나중에 다 만들고 그리기?
+
+2. 발표 개별
+
+3. 파트는 크게 관리자 / 교수 / 학생 으로 나누는게?
+==> 2 2 3 식으로 3명인 팀은 제일 기능이 많은 곳으로
+
+
+
+
+
+
