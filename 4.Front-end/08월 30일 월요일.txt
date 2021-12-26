@@ -1,0 +1,40 @@
+08월 30일 오전수업
+
+[ jQuery - index( ) ]
+
+$("span.buttons").mouseover(function(){}); 
+// 여러 개의 <span>태그들이다.
+
+var $target = $(event.target);
+// 그 중에서 mouseover 이벤트가 발생한 <span>태그이다.
+
+var i = $target.index();
+// $target.index() 은 $("span.buttons") 중에서 현재 마우스가 올라간 곳의 배열요소의 인덱스값을 알려주는 것이다.
+
+====================================================================================
+
+[ jQuery - 선택자.eq(index값); & trigger ]
+
+jQuery의 선택자는 css와 거의 비슷하다.
+$("div#firstdiv > span.buttons") == $("span.buttons")
+
+지금까지 우리는 $("div#firstdiv > span.buttons").click(function(){}); function 파라미터에 function(event){} 를 빼도 괜찮았지만, trigger를 쓰려면 function 파라미터에 event를 반드시 써야 한다.
+
+※ 문서가 로딩되어지면, 특정 태그가 이벤트 발생된 것처럼 만드는 방법은? ==> Trigger이다.
+선택자.trigger(event종류);
+==> 문서가 로드되어진 다음에는 자동적으로 선택자에 event종류가 동작하도록 실행하는 것이다. 
+
+▶ 똑같은 버튼이(span태그가) 여러 개가 있는데 그러면 몇 번째 선택자를 잡는데 사용되는 것은 eq이다.
+$("div#firstdiv > span.buttons").eq(0); ==> 김태희 버튼
+$("div#firstdiv > span.buttons").eq(1); ==> 아이유 버튼
+$("div#firstdiv > span.buttons").eq(2); ==> 박보영 버튼
+
+==> 선택자.eq(index값); 은 선택자(배열)중에서 index값에 해당하는 요소(선택자)를 얻어오는 것이다.
+==> 마치 배열에서 특정 index에 해당하는 배열요소를 얻어오는 것과 같은 의미이다.
+
+
+$("div#firstdiv > span.buttons").eq(0).trigger("click");
+==> 문서가 로드되어지자마자 김태희 버튼에 클릭이벤트가 발생하라는 뜻이다.
+
+★ 만약에 이벤트처리에 파라미터 event를 써놓지 않으면 trigger가 작동되질 않는다.
+==> 평상시에는 event를 생략해도 괜찮지만, 웬만하면 쓰는 것이 좋다.

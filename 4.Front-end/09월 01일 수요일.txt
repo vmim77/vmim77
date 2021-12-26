@@ -1,0 +1,197 @@
+09월 01일 오전수업
+
+[ hover ]
+
+hover는 이벤트가 아니라 jQuery에서 제공해주는 함수인데 mouserover와 mouserout을 합친 것이다.
+==> hover는 이벤트가 아니란 점이 중요하다.
+==> $(".buttons").bind("hover", function(){}); 은 에러이다.
+
+▶ 선택자.hover(function(){} , function(){});
+첫번째 function(){} 은 mouseover 에 해당하는 내용을 기재하는 것이고,
+두번째 function(){} 은 mouseout 에 해당하는 내용을 기재하는 것이다.
+
+function 파라미터에 event를 생략해도 괜찮지만, trigger를 쓸 때는 반드시 써야 한다.
+
+javascript에서 css는 선택자.style.borderColor = "red";
+jQuery에서 css는 선택자.css({'background-color':'navy', 'color':'#fff'});
+※ css도 객체이다.
+
+====================================================================================
+
+[ JS에서 css 선택자 사용하기 ]
+
+▶ 자바스크립트도 제이쿼리처럼 css 선택자식으로 태그를 잡을 수 있는가?
+==> 자바스크립트에서 css 선택자를 가지고 잡는 방법 : document.querySelectorAll(css선택자)
+==> 자바스크립트에서 css 선택자를 가지고 잡는 방법 : document.querySelector(css선택자)
+
+==> all은 li:nth-child(3)이라고 쓰면 3번째 li를 모두 잡아준다. ( 복수개여서 변수가 배열이 된다 )
+==> 하지만 그냥 querySelector는 처음으로 조회된 태그만 잡아준다. ( 단수 )
+==> document.querySelectorAll("body > section:last-child > ol > li:first-child")[0]; == document.querySelector("body > section:last-child > ol > li:first-child");
+
+▶ css에서는 font-style이지만, 자바스크립트에서는 대시(-)를 쓰면 안되어서 fontStyle로 쓴다.
+==> font-weight도 마찬가지로 fontWeight라고 쓴다.
+
+====================================================================================
+
+[ addClass & removeClass & $(document).on() ]
+
+★★★★★ 선택자를 잡을때 선택자가 <body> 태그에 직접 기술된 것이라면 선택자를 잡을수가 있으나, 
+★★★★★ 스크립트내에서 기술한 것이라면 선택자를 못 잡아올수 있다.
+★★★★★ 이러한 경우는 $(document).on("이벤트종류","선택자",function(){}); 으로 한다.
+
+<img>태그는 body 태그에 직접 기술한 것이 아니라, $("div#face").html("<img src='images/"+arrPerson[i].filename+"' />"); 이렇게 삽입한 것이여서 일반적인 방법으로는 선택자가 안 잡힌다.
+
+$(document).on("mouserover", "div#face > img", function(){
+	$(this).addClass("image_custom");
+});
+
+마우스가 올라가면 해당 태그에 클래스가 추가되고, (클래스명이 추가되서 해당 클래스에 대한 css가 적용된다)
+
+$(document).on("mouserout", "div#face > img", function(){
+	$(this).removeClass("image_custom");
+});
+
+마우스가 떨어지면 해당 태그에 추가된 클래스가 사라진다.
+
+====================================================================================
+
+[ 상수변수 const ]
+
+var는 변수의 재선언, 재할당이 가능하다.
+                var name1 = '이순신'; 
+                var name1 = '엄정화'; <-- 정상
+                     name1 = '강감찬'; <-- 정상
+        
+
+let는 변수의 재선언은 불가하며, 재할당이 가능하다.
+                let name2 = '이순신';
+                let name2 = '엄정화'; <-- 재선언 이므로 오류!!
+       	        name2 = '강감찬'; <-- 변수에 값을 재할당하는것은 정상
+
+const는 변수의 재선언과 재할당이 불가능하다.
+                const name3 = '이순신';
+                const name3 = '엄정화'; <-- 재선언 이므로 오류!!
+        		name3 = '강감찬'; <-- 변수에 값을 재할당하는것이므로 이것도 오류!!
+
+====================================================================================
+
+[ 버튼클릭 이벤트 ]
+
+<img>태그는 body 태그에 직접 기술한 것이 아니라, $("div#face").html("<img src='images/"+arrPerson[i].filename+"' />"); 이렇게 삽입한 것이여서 일반적인 방법으로는 선택자가 안 잡힌다.
+
+★ 허나, click 이벤트는 body 태그에 직접 기술한 것이 아니여도 선택자가 잡혀진다.
+==> 통일성을 위해서 클릭도 $(document).on( ) 을 사용한다.
+
+▶ 복수개 엘리먼트 중 몇 번째 index인지 알아오는 법
+
+$target.index(); 와 $("div#btnsDiv > button").index($target); 둘은 같다.
+
+▶$target.index( ); 은 "내가 클릭한(이벤트) 곳의 인덱스"라는 뜻이고,
+▶ $("div#btnsDiv > button").index($target);  은 "여러 개의 버튼 태그들 중에서 내가 선택한 곳의 인덱스"라는 뜻이다.
+==> 쓰는 문법만 약간 다를 뿐이지 기능은 똑같다.
+
+★  선택자.index(특정엘리먼트); ==> 선택자가 복수개 엘리먼트를 가리키는 것일때 특정엘리먼트가 복수개 엘리먼트 중 몇 번째 index 값을 가지는지를 알려주는 것이다.
+
+
+====================================================================================
+
+[ 아코디언 ]
+
+클래스명이 패널인 것들은 처음에는 감춰둬야 한다.
+// $("div.panel").hide();
+// 또는
+// 자바스크립트에서는 display: none;
+
+==> 자바스크립트는.style="";
+==> 제이쿼리는 .css({}); 인데 속성값이 한 개라면 .css("display","none"); 으로 쓴다.
+
+▶ css에서 transition은 속성은 서서히 변화시키는 속성이다. 3s(3초)는 transition 실행시간으로써 반드시 지정해주어야 한다.
+==> 원래 css 속성에서 hover가 되어져서 바뀔 때 3초동안 바뀐다는 뜻이다.
+
+
+클릭한 버튼 태그 다음의 div 태그만 .show()를 하려면 어떻게 선택해야 하는가? ==> next를 사용한다. 
+
+$("button.accordion").click(function(event){
+	$(event.target).next();
+});
+
+====================================================================================
+
+09월 01일 오후수업
+
+[ 탭 ]
+
+▶ 자바스크립트는 "이벤트소스.onclick( )", 제이쿼리는 "이벤트소스.click( )"
+▶ eq(인덱스번호): 해당 인덱스 번호의 엘리먼트를 가져온다.
+
+▶ 클릭한 것만 보여주는 방법은?
+==> 클릭을 하면 일단 다 감추고, 다시 클릭한 것만 보여준다.
+
+$("button.tablinks").click(function(event){	
+	var $target = $(event.target);
+	var i = $("button.tablinks").index($target);
+	$("div.content").css("display","none");		
+	$("div.content:eq("+i+")").css("display","block");
+});
+
+▶ $("button.tablinks:eq(0)") 와 $("button.tablinks").eq(0)은 같다.
+====================================================================================
+
+[ each ]
+
+$("div.content").each(function(index,item){});
+
+each는 index, item순
+forEach는 item, index, array순
+
+====================================================================================
+
+[ opacity ]
+
+▶ 광도
+▶ 불투명도, 사진을 밝게 또는 흐리게 처리하기
+
+$("div#firstdiv > img").css('opacity','1.0');
+==> 1.0보다 낮아지면 희미해진다.
+
+
+▶ 선택자.empty(); 은 선택자 안에 들어있는 내용물들을 모두 비운다는 말이다.
+
+"<li><label>성명 :</label>" 
+"<li><label>주소 :</label>" ==> 이렇게 해야 타이틀들의 간격이 일정하다.
+
+====================================================================================
+
+[ prepend, append, empty, remove ]
+
+html( ) == prepend( ), append( )
+
+prepend는 위로 쌓아가고(나보다 앞에), append는 아래로 쌓아간다(내 뒤에)
+
+▶ html( )은 덮어 씌우는 것이고,
+▶ prepend( )는 원래거는 두고, 내용물을 위쪽 방향으로 덧붙여주는거고,
+▶ append( )는 원래거는 두고, 내용물을 아래 방향으로 덧붙여준다.
+
+
+▶ empty( )
+==> 해당되는 선택자 안에 있는 모든 태그들과 내용물을 비운다.
+
+<div class="content div1">
+	<span style="color:red; font-weight: bold;">애국가(prepend)</span>
+</div>  ==> 이게 
+
+<div class="content div1">
+
+</div>  ==> 이렇게 된다.
+
+▶ remove( )
+==> 해당되는 선택자 태그 자체를 삭제해버린다.
+
+<div class="content div1"> ==> 얘를 삭제해서 내용물까지 사라지는 것이다.
+
+
+▶ empty는 선택자 태그는 살아있어서 다시 prepend, append가 가능하지만, remove는 선택자 태그자체도 날려버려서 추가 불가능
+
+★ append와 prepend는 jQuery의 함수이다.
+
+자바스크립트는 innerText, innerHTML // jQuery는 html( ) 등을 쓴다.

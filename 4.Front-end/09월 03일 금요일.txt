@@ -1,0 +1,340 @@
+09월 03일 오전수업
+
+★ 난수 공식: Math.floor( Math.random()*(max-min+1) ) + min;
+
+fadeIn( )과 slideDown( )은 hide( )의 반대이다. (== show( )와 같이 나타내는거임)
+
+hide( )와 같은건 fadeOut( ), slideUp( )
+
+====================================================================================
+
+[ keydown & keyup ]
+
+그동안 이벤트는 마우스를 가지고 했으나, 이번엔 키보드를 이용한 이벤트를 구현할 것이다.
+
+▶ keydown : 키보드를 누를 때 이벤트 발생
+▶ keyup : 키보드를 누르고 뗄 때 이벤트 발생
+
+$("input:text[id=text1]") == $("#text1")
+==> 인풋태그, 타입은(:) text, 아이디는 text1
+==> 왼쪽은 코드만 봐도 자세히 설명된다.
+
+★ trigger를 사용할 땐 반드시 function의 파라미터에 event를 적어줘야 한다.
+
+로그인할 때 주로 keyup을 쓴다.
+==> keyup은 내가 쓴 내용이 그대로 나옴
+==> keydown은 내가 쓴 내용과 약간 다름, 왜냐하면 전에 쓴걸 다음걸 눌러야 보내지니깐
+
+input:password => 인풋태그인데 password 타입인 것
+
+▶ 로그인버튼을 클릭하던지, 비밀번호 칸에서 엔터를 치든지 똑같이 로그인 기능이 작동해야 한다.
+==> 번거롭게 두 번 기술할 필요없이 함수호출로 한다.
+
+★ 엔터의 키코드는 13이다. (event.keyCode)
+
+▶ document.LoginFrm; // 문서내에서 name 값이 LoginFrm 인 엘리먼트를 가리키는 것이다. 
+
+====================================================================================
+
+[ 이벤트 버블링 ] 
+
+▶ 원하지 않은 이벤트까지 같이 발생되어지는 현상을 이벤트 버블링이라고 한다.
+==> 태그들이 서로 물려있어서 그런 것이다.
+==> p태그를 클릭했는데 div태그 이벤트처리까지 실행되고.... span태그를 클릭하면 p태그, div태그 까지 다 실행되고...
+
+HTML 태그들은 나무가지처럼 퍼져있어서 DOM(Document Object Model) tree 형태라고 부른다.
+==> 문서 안에 객체인 태그들이 있어서 DOM 
+
+★ 이벤트 버블링을 막기 위해서는 구분자(아이디, 클래스)가 반드시 필요하다.
+==> 스크립트에서 그냥 엘리먼트로 선택자를 잡으면 이벤트 버블링이 발생한다.
+
+선택자.is("선택자2")와 if문을 이용하여 버블링을 막는다.
+▶ 선택자1.is(선택자2) 은 선택자1 과 선택자2 가 동일한 엘리먼트를 가리키는 것이라면 true , 동일한 엘리먼트를 가리키는 것이 아니라면 false
+
+먼저 div(최상위 태그) 태그를 선택하면, if절로 들어가서 span.구분자 / p.구분자 / else는 div 식으로 나눠서 이벤트 처리를 한다.
+
+====================================================================================
+
+[ 플립 ] 
+
+▶ CSS 효과이다. jQuery(X)
+
+▶ $("선택자").append(내용물); == $(내용물).appendTo("선택자");
+
+▶ CSS가 외부파일 형식이라면 개발자도구에서 [소스]탭에서 CSS 파일을 오른쪽 클릭하여 open in new tab으로 열어서 그걸 새로고침하면 적용이 빠르게 된다.
+
+▶ background-color: transparent; 는 배경색을 투명으로 해준다.
+
+▶ 이미지와 div에 크기를 맞춰야 빈틈이 없이 딱맞아 떨어지게 나온다.
+
+▶ perspective: 100px; 는 원근감을 주는 것이다.
+==> 값이 작으면 작을 수록 보고있는 사람의 위치를 더 가까이에서 보는 것으로 처리하므로 엘리먼트(요소)가 커 보이게 된다.
+==> 이 값이 크면 클수록 보고있는 사람의 위치를 더 멀리 떨어져서 보는 것으로 처리하므로 엘리먼트(요소)가 작게 보이게 된다.
+
+▶ 플립카드도 포지션을 static을 줘서는 안 된다.
+
+▶ transition: transform 2.6s; ==> 요소(엘리먼트)를 transform(변형) 시키는데 걸리는 시간(단위는 초) 2.6초 
+
+▶ transform-style: preserve-3d; ==> 요소(엘리먼트)의 자식요소들(엘리먼트들)을 3D 공간에 배치 시킨다.
+==> 회전효과를 주기위해서 주는 것이다.
+
+▶ box-shadow: 0 4px 8px 0 rgba(0,0,0,1.0); ==> rgba(빨강, 초록, 파랑, 투명도)
+
+transform 은 요소(엘리먼트)를 변형시키는 것이다.
+요소를 회전(rotate), 확대 또는 축소(scale), 기울이기(skew), 이동(translate) 효과를 부여할 수 있다. 
+이를 통해 CSS 시각적 서식 모델의 좌표 공간을 변경한다.
+
+rotateX는 x축을 기준으로 요소(엘리먼트)를 회전시키는 것이다. 
+1회전이 360deg 이므로 540deg 는 1바퀴 반을 회전시키는 것이다.
+
+★ 플립카드 전면(이미지)과 후면(신상정보)을 합치기 위해서는 반드시 포지션을 absolute로 줘야한다.
+
+▶ z-index: 1; position 속성을 이용하다 보면 엘리먼트(요소)를 겹치게 놓게될 수 있다. 
+==> 숫자가 클 수록 위로 올라오고, 숫자가 작을 수록 아래로 내려간다.
+
+====================================================================================
+
+[ 폼태그 - blur, submit ] 
+
+ <<요구사항>>
+
+1. 폼 회원가입에서 회원가입 버튼을 클릭하면 registermember.do 로 이동한다. (完)
+
+2. 아이디, 패스워드, 패스워드확인, 이름, 이메일 모든 항목은 반드시 입력해야 한다. (完)
+
+3. 아이디는 라벨을 클릭해도 해당 입력 상자로 포커스 이동한다. (完)
+
+4. 취소 버튼을 이용해서 입력 상자를 초기화 한다. (完)
+
+5. 아이디는 입력시 첫글자는 대문자이고 나머지 글자는 영문자, 숫자로 총 5글자 이상만 가능하다.  (完)
+==> 정규표현식 사용
+==> var regExp = /^[A-Z][A-Za-z0-9]{4,}$/;
+
+6. 아이디 입력 후 포커스를 잃는 경우에 조건 체크 한다.  (完)
+==> 그 전까진 유효성 검사는 확인버튼을 누르면 실행되게 했는데 이제는 아이디 입력 후 포커스가 잃는 경우에 하게 한다.
+==> 아이디에 뭘 쓰고, tap키로 다음으로 넘어가면 중복여부나 유효성검사를 체크한다.
+
+★ 이런 이벤트를 blur 라고 한다.
+==> 선택자.bind("blur", function(){}); 은 선택자에 포커스가 있다가 포커스를 잃어버렸을 때 발생하는 이벤트 처리이다.
+==> 선택자.blur(function(){}); 도 같은 것이다. (jQuery의 메소드)
+
+7. 조건 체크에 만족하지 않으면 '5글자이상, 첫글자는 대문자이고 영문자, 숫자만 가능" 이라는 글자가 나타난다.  (完)
+
+8. 입력한 아이디 값도 삭제한다.  (完) 
+
+9. 패스워드 입력 하지 않고 패스워드확인을 입력한 경우 "패스워드를 입력하세요"라는 대화 상자가 나타나고   (完)
+   패스워드확인 값 삭제하고 패스워드 입력 상자로 포커스 이동한다.   (完)
+
+   패스워드 입력창 옆에 패스워드와 패스워드확인이 일치하면 '패스워드가 일치합니다'라는 문자를 초록색 진하게 출력하고,   (完)
+   일치하지 않으면 '패스워드가 일치하지 않습니다'를 빨간색으로 진하게 출력한다.   (完)
+
+10. 성별입력은 회원가입 버튼을 클릭시 남 또는 여 radio 버튼 선택여부 확인한다.   (完)
+     성별입력을 선택하지 않은 경우 "성별을 선택하세요"라는 메시지 출력하고 submit 이벤트 발생하지 않는다.   (完)
+
+==> submit()메서드는 이미 브라우저에 정의되어 있는 메서드로 실제 input type="submit"이 클릭 되었을 때 실행되는 메서드입니다.
+==> $("form[name=registerFrm]").submit(function(){}); 은 submit 을 클릭하면 작동되는 이벤트 처리이다.
+==> function에 return false;를 하면 submit을 하지 않게 한다.
+
+▶ $("input:radio[name=gender]:checked")는 체크된 라디오 태그를 반환한다.
+
+
+====================================================================================
+
+09월 03일 오후수업 
+
+▶ 애니메이션 효과는 필요할 때 제이쿼리 폴더 - 03animation을 참조한다.
+
+[ 부트스트랩 ]
+
+★★★★★ 부트스트랩은 클래스에 정해진 클래스명을 주면 CSS에서 효과를 준 것처럼 된다.
+
+Open API 
+
+Bootstrap3 : 가장 안정적인 버전 - 옛날 브라우저에도 다 지원된다.
+Bootstrap4 : 5 이전에 가장 최신 버전 - 최신 브라우저에만 지원된다. (IE9 이하는 지원X)
+Bootstrap5 : 2021년 06월에 출시됨
+
+▶ CDN(Content Delivery Network) 방식 : JS나 CSS파일을 네트워크상에서 끌어다 쓰는 방법
+▶ Download 방식 : 파일을 직접 다운로드해서 끌어다가 쓰는 방법
+
+
+부트스트랩을 쓰려면 먼저 meta 태그가 와야 한다.
+
+▶ <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+==> 부트스트랩은 모바일 우선으로 개발되었으며, 반응형웹을 위해서 뷰포트 메타 태그를 추가한다.
+
+▶ width=device-width
+웹 페이지의 크기가 모니터의 실제 크기를 따라가도록 만든 설정으로서 
+모니터, 스마트폰 등의 화면에 맞는 비율로 화면이 뜨도록 만듭니다.
+
+▶ initial-scale=1
+보여지는 화면의 zoom up 정도를 1배율로 한다는 것입니다. 
+이 값을 키우면 보여지는 화면이 줌 되어 크게 보입니다. 
+마치 스마트폰에서 작은 사진을 두 손가락을 이용해 확대시키는 것과 비슷합니다. 
+스마트폰에서만 효과가 있는 코드 입니다.
+
+▶ shrink-to-fit=no
+애플의 safari(사파리) 브라우저에만 영향을 미치는 속성입니다. 
+그 중에서도 사파리 11 이전의 버전과 관련된 것입니다. 
+사파리는 기본적으로 viewport의 크기보다 보여줘야할 내용이 크면, 보여줘야할 내용을 줄여서라 보여준다고 합니다. 
+그것을 방지하기 위해 이 코드를 쓴다고 합니다. 
+==> 굳이 안 써도 괜찮다.
+
+예제에서는 jQuery 라이브러리 주소가 body태그에 나오는데 문제가 없다.
+==> 부트스트랩은 jQuery가 꼭 필요하다.
+==> 또한 부트스트랩에서 별도로 제공하는 js도 필요하다.
+
+bootstrap.min.js + popper.min.js = bootstrap.bundle.min.js
+
+★★★★★ 항상 jQuery 라이브러리 스크립트가 먼저 나오고, 그 후에 부트스트랩 js 스크랩트가 나와야 한다.
+
+====================================================================================
+
+[ 컨테이너 ]
+
+일반적인 .container는 양쪽에 여백이 있다.
+.container-fluid는 화면에 꽉 채워진 컨테이너이다.
+
+기본적으로, .container 와 .container-fluid 는 상단 및 하단에는 패딩이 0 이고, 우측 및 좌측에는 패딩이 15px 로 되어있다.
+
+기기 디스플레이 크기에 따라서 일반적인 .container는 width가 결정된다.
+
+                                    Extra small(xs)      Small(sm)                  Medium(md)              Large(lg)                  Extra large(xl)   
+                                   576px미만                          576px이상  768px미만                   768px이상  992px미만               992px 이상  1200px미만                1200px 이상 
+      
+.container        width        100%                 540px                      720px                   960px                      1140px   
+.container-fluid  width       100%                  100%                       100%                    100%       
+
+
+★★★★★
+xs 인 경우에는                 {property}{sides}-{size} 
+sm, md, lg, xl 인 경우에는  {property}{sides}-{breakpoint}-{size} 
+
+
+▶ <div class="container pt-3">
+==> pt-3은 padding-top-0~5
+==> size 를 음수로도 할 수 있음. 숫자 앞에 n을 붙이면 됨. 
+
+
+<div class="container p-3 my-3 border">
+==> 4방향에 모두 padding 3size씩 줌
+==> my-3에서 m은 margin을 뜻한다. y는 y축(top과 bottom)을 뜻 한다.
+
+
+<div class="container p-3 my-3 bg-dark text-white">
+==> bg는 background-color를 의미, text는 color를 의미한다.
+
+
+<div class="mx-auto bg-warning" style="width:250px">
+==> margin-left, right auto 
+
+====================================================================================
+
+[ 그리드 ]
+
+▶ [class*="col"] ==> [class*="col"] 은 CSS3에서 나온 선택자로서 class이름에 col 이라는 글자가 포함된 것들을 말한다.
+
+★ 1개행에 들어올 수 있는 컬럼의 최대개수는 12개이다.
+==> 13개가 되면 밑으로 떨어짐
+
+★ Medium 범위의 약어를 클래스명에 넣는다면 디바이스 폭이 Medium부터 Extra Large까지 모두 포함된다는 뜻이다.
+==> .col-md- >> 얘는  Medium부터 Extra Large까지 폭이 들어갈 수 있음
+
+>>>> !!!!!! ====== 아주 중요  아주 중요 아주 중요 아주 중요 ====== !!!!!! <<<<
+breakpoint는 항상 해당 breakpoint 이상에 작용한다는 것을 꼭 기억할 것 !!!! 
+
+예1> mb-3    은 xs 이상 부터 margin-bottom 은 1rem 이다. 즉, 모든 디바이스에서 margin-bottom 은 1rem 이라는 것이다. 
+예2> mb-md-3 은 md 이상 부터 margin-bottom 은 1rem 이다. 즉, width 의 크기가 768px이상 에서는 margin-bottom 은 1rem 이라는 것이다.               
+
+
+즉,
+<div class="col-md-8">.col-md-8</div>
+<div class="col-md-4">.col-md-4</div>
+
+얘네는 폭이 Medium 이상이면 한 행에 들어올 수 있는 12개의 컬럼 갯수중 8개, 4개씩 나눠서 먹겠다는 뜻이다.
+
+
+▶ <div class="col col-lg-2">
+==> 이렇게 중첩이 되어지면 col-lg-2 얘가 더 우선되어진다.
+==> 만약 width가 large급이 되어지면 2개열을 합친만큼 되라는 것이다.
+
+▶ <div class="col-md-auto">
+==> 얘는 medium이 되어지면 auto로 하겠다는 뜻이다.
+
+<div class="row justify-content-start"> ==> 왼쪽 정렬
+<div class="row justify-content-center"> ==> 가운데 정렬
+<div class="row justify-content-end"> ==> 오른쪽 정렬
+
+
+▶ offset
+<div class="col-md-4">.col-md-4</div>
+<div class="col-md-4 offset-md-4">.col-md-4 .offset-md-4</div>
+
+일단 12개 중에 4개를 넣고, 그 다음엔 4개를 건너뛰고(offset-md-4), 또 4개를 넣는다.
+==> width가 medium이상일때만 offset이 적용됨
+
+====================================================================================
+
+[ typography ]
+
+<h3>
+Fancy display heading
+<small class="text-primary">With faded secondary text</small>
+</h3>
+
+<small> 부분은 <h3>이긴하지만 글자크기가 조금 작게 나온다.
+
+▶ 글자색
+text-muted
+text-primary
+text-success
+text-info
+text-warning
+text-danger
+		
+▶ 배경색		   
+bg-primary
+bg-success
+bg-info
+bg-warning
+bg-danger 
+
+
+<h1 class="display-1">Display 1</h1>
+<h1 class="display-2">Display 2</h1>
+<h1 class="display-3">Display 3</h1>
+<h1 class="display-4">Display 4</h1>
+==> 얘네는 글자크기
+
+
+<h1>글자 정렬</h1>
+<p class="text-left border">text 왼쪽정렬</p>
+<p class="text-right border">text 오른쪽정렬</p>      
+<p class="text-center border">text 가운데정렬</p>
+
+====================================================================================
+
+[ img ]
+
+▶ 반응형 이미지: img-fluid
+==> width에 따라 크기가 변한다.
+
+▶ 썸네일 이미지: img-thumbnail
+==> 테두리가 생긴다.
+
+▶ 테두리 모서리를 둥글게 처리: rounded
+==> 모서리를 둥글게 처리해준다.
+
+▶ 테두리 모서리를 원모양으로 처리: rounded-circle
+
+▶ 이미지 정렬: 클래스에 float-left, float-right를 쓴다.
+
+▶ 이미지 가운데 정렬
+1. 상위에 div 태그를 둬서 text-center를 준다.
+2. 이미지태그에 mx-auto, d-block을 준다. (margin left와 right에 오토를 주고, display를 block을 준다.)
+
+====================================================================================
+
+[ 테이블 ]
+▶ 반응형 테이블: table-responsive
+반응형 테이블(테이블의 원래 크기를 보존해주기 위한 것으로써, 디바이스의 width가 작아지면 테이블 하단에 스크롤이 생김)

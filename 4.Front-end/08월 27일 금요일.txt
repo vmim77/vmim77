@@ -1,0 +1,173 @@
+08월 27일 금요일 오전수업
+
+[ jQuery ]
+
+▶ 자바스크립트 라이브러리
+
+쉽게나온 자바스크립트이다. jquery 또한 자바스크립트이다.
+
+API(Application Programming Interface 애플리케이션 프로그래밍 인터페이스, 응용 프로그램 프로그래밍 인터페이스)는 응용 프로그램에서 사용할 수 있도록, 운영 체제나 프로그래밍 언어가 제공하는 기능을 제어할 수 있게 만든 인터페이스를 뜻한다.
+
+jquery는 애니메이셔 효과들이 많이 있어서 반응형 웹을 만드는데 도움이 많이 된다.
+
+▶ jquery 를 쓰려면 먼저 jquery script를 다운받아야 한다.
+
+jquery와 jquery UI의 버전이 차이나는 이유는 웹브라우저마다 다른걸 써야하기 때문이다.
+==> 인터넷 익스플로러 9~11 등까지 호환시키려면 jquery 버전 1.N 대의 버전을 써야한다.
+==> 1.N 대 는 옛날 브라우저까지 호환시키려는 버전이다.
+==> 3.N 대 는 최신 브라우저에 호환시키려는 버전이다.
+
+▶ jquery.js 파일 
+min파일 => 주석X, 한줄로 쭉 쳐놓은 코드, 파일용량↓, 로드속도↑
+일반파일 => 주석O, 가독성 좋게 줄바꿈 해둠, 파일용량↑, 로드속도↓
+
+▶ $(function(){}); <== 문서가 로딩되어지면 무엇을 해라라는 뜻이다.
+(== window.onload = function(){} 와 같다.)
+
+▶ jquery에서 선택자 잡기는 css와 거의 비슷하다.
+(자바스크립트는 document.getElementById 등으로 잡는다.)
+==> $("span#test"): span태그인데 id가 test인 것이다.
+==> $("span#test").html(); == innerHTML도 다음과 같이 쓴다.
+
+▶ $(function(){}); 와 $(document).ready(function(){}) 은 같은 것이다.
+==> $(document).ready(function(){}) 이렇게 써야 나중에 코드를 확인할 때 전체인지 일부분인지를 구분하기 편해진다.
+
+====================================================================================
+
+[ bind ]
+
+웹페이지에 버튼이 여러개 있고 각각의 버튼은 서로 다른일을 한다.
+버튼에 대한 이벤트를 올바르게 처리하려면 어떤 버튼을 클릭했는지 알아야 한다.
+
+▶  자바스크립트에서 '선택자.addEventListener(이벤트, 핸들러)'와 똑같은게 bind(이벤트, 핸들러)이다.
+
+** 자바스크립트의 this = $(this)
+** 자바스크립트의 .innerText( ) = .text( )
+
+
+====================================================================================
+
+[ val( ), hide( ), show( ) ]
+
+▶  자바스크립트의 .value == .val( )
+
+userAnswer == 17 이렇게 쓰더라도 웹상에서는 알아서 string 타입으로 변환되서 들어가진다.
+==> 진짜 숫자로 쓰고 싶다면 Number, parseInt, parseFloat로 써야한다.
+==> 만약 자바라면 쌍따옴표를 꼭 붙여줘야 한다!!
+
+$("div.no").hide( ); <== 클래스명이 no인 것에 나오는 것을 감춘다.
+$("div.ok").show( ); <== 클래스명이 no인 것에 감춘것을 다시 표시한다.
+
+var userAnswer = $("input#answer").val( ) ==> 벨류값을 얻어오는 것
+$("input#answer").val("") ==> 벨류값을 집어 넣는 것
+
+★ hide, show는 jquery에만 있다. 자바스크립트에는 없음 자바스크립트는 선택자.style.none으로 써야함
+
+====================================================================================
+
+[ each, radio, checked ]
+
+★ radio, checkbox 는 name이 똑같아야 한다.
+
+$("input:radio[name=answer1]") ==> input태그인데 type이 radio이고, name이 answer1인 것을 선택한다.
+
+선택된 것이 복수개이니깐 $("input:radio[name=answer1]").each(function(index, item){ });반복문을 사용한다.
+▶ javascript -- forEach(function(item, index, array){ });
+▶ jquery -- eash(function(index, item){ }); // 순서가 다르다, array는 없다.
+
+▶  each( )는 인덱스는 0부터 시작한다.
+▶  item은 $(item)으로 적어야 한다.
+
+▶ 자바스크립트 forEach( ) 는 break가 없어서 some( ) 을 쓰는데, jquery의 each( )는 break와 비슷한 기능이 있지만 문법이 다르다.
+
+if(index > 1) {
+	return false; // return false; 가 마치 일반 for문에서의 break; 와 같은 기능이다.
+}
+
+==> return true;는 continue 와 같다.
+
+
+====================================================================================
+
+08월 27일 오후수업 
+
+$("input:radio[name=answer1]").prop("checked", false); 
+==> 다시시작을 누르면 다음과 같이 checked에 false값을 주어서 모든 체크를 풀어버린다.
+
+<html  oncontextmenu="return false" ondragstart="return false" onselectstart="return false">
+
+ === >>> 소스보기 금지 <<< === 
+oncontextmenu="return false" : 마우스 오른쪽 메뉴 금지
+ondragstart="return false"   : 드래그 금지
+onselectstart="return false" : 선택복사 금지
+
+$("input:checkbox[name=answer1]") ==> 이거 자체는 모든 체크박스를 의미한다.
+
+$("input:checkbox[name=answer1]:checked") ==> 체크박스들 중에서 체크가 된것만 알아온다.
+
+
+====================================================================================
+
+[ unbind, target, random ]
+
+※ unbind == bind 된 것을 풀어버리는 것이다. (bind == addEventListener)
+
+▶ $(event.target) == $(this) => 이벤트가 발생된 곳을 가리킨다.
+==> 체크박스나 라디오는 체크가 된 곳을 알 때에는 prop나 is로 알 수 있다. 
+
+▶ $("span.buttons").unbind("click");
+==> $("span.buttons") 에 대해 click 이벤트가 발생하지 않도록 한다.
+
+▶ 난수 공식 :  Math.floor( Math.random()*(max-min+1) ) + min;
+
+▶ $("div#firstdiv").empty();
+==> 선택자.empty(); 은 선택자 안에 들어있는 내용물들을 모두 비운다는 말이다.
+
+====================================================================================
+
+[ mouseover, mouserout, hover ]
+
+mouseover는 자바스크립트에서는 onmouserover이다.
+
+★ jquery에서는 '선택자.each( )'이고 배열은 '배열명.forEach( )'를 써야한다.
+★ jquery에서는 '선택자.each( )'는 순서가 선택자.each(fucntion(index, item){ }); 이다.
+
+★ 배열을 forEach로 돌리는데 id를 각각 줘야한다면 index를 이용하는 것도 좋다. 왜냐하면 id는 고유해야 하는데 index도 마찬가지로 고유하기 때문이다.
+
+==> 아이디로 걔에 mouseover 가 되면 연예인의 정보가 뜨게 해야한다.
+
+$("span.buttons").bind("mouseover", function(){
+console.log("확인용1");
+});
+
+$("span.buttons").mouseover(function(){
+console.log("확인용2");
+});
+
+==> 둘은 같은 기능이다.
+
+$("span.buttons").mouseover(); 이런 메소드가 이미 jquery에 내장되어 있다.
+==> bind를 써서 이벤트를 mouseover로 준 것과 똑같음
+
+
+==== 선택자의 class 명 알아오기 ===== 
+선택자.attr('class') 또는 선택자.prop('class')
+		 
+console.log("선택자의 class 명 알아오기 : " + $target.attr('class') );
+
+
+==== 선택자의 id 명 알아오기 ===== 
+선택자.attr('id') 또는 선택자.prop('id')
+
+console.log("선택자의 class 명 알아오기 : " + $target.prop('id') );
+
+
+==== 선택자의 name 명 알아오기 ===== 
+선택자.attr('name') 또는 선택자.prop('name')
+
+$target.css({'background-color':'navy','color':'white'}); ==> 이벤트가 발생한 곳의 css를 바꿀 수 있다. jquery에만 있는 것이다. 자바스크립트에는 없다.
+
+
+
+
+

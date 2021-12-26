@@ -1,0 +1,186 @@
+08월 19일 오전수업
+
+[ 인풋태그 ] 
+
+Pesticide for Chrome (without hover bar)
+==> 요소마다 자동으로 크롬에서 border: solid 1px 를 넣어줘서 보기 편한 확장프로그램
+
+인풋타입의 email은 email형식에 맞게 작성해야 전송 시킬 수 있다.
+
+▶ 암호는 인풋타입을 text로 적으면 내가 타이핑한 게 보이기 때문에 인풋타입을 password로 해준다.
+==> 패스워드타입은 알아서 자동완성기능(autocomplete)이 꺼져있다.
+
+나중에 웹의 정보를 오라클에 보내기 때문에 컬럼의 데이터타입(varchar2)와 mapping 시켜서 맞춰야 한다.
+==> maxlength도 varchar2의 크기와 맞춰야 함
+
+▶ autoforcus는 한 개만 설정해야 한다.
+
+▶ radio 타입은 여러 개중에 한 개만 선택하는 것이다.
+==> 여러 개 중에 한개만 체크할 수 있게 하려면, name을 똑같이 줘야 한다.
+==> (ex) 남자<input type="radio" name="gender" />
+==> 남자 글자를 클릭하면 체크가 되고, 여자 글자를 클릭하면 체크가 되게하려면 label태그를 사용한다.
+==> 남자와 여자를 label로 감싸고 for를 사용한다, 근데 label에 준 css가 적용되기 때문에 남자와 여자에는 label에는 css가 적용되지 않게 해야한다.
+==> 가장 쉬운건 class가 있고, 뒤에서 배울 child가 있다.
+==> 만약 radio에 기본값으로 체크가되있게 하려면 checked를 주면된다. 물론 한개만 줘야 한다.
+
+▶ checkbox 타입은 다중선택이 가능하다. (ex. 취미 게임 V, 영화감상, 글쓰기 V, 음악감상 V)
+
+▶ 최종학력은 select 태그로 목록에서 하나 고를 수 있게 한다.
+==> 값들은 <option>태그로 준다.
+==> 기본값은 <option selected>를 준다.
+==> 얘도 한개만 선택가능
+
+▶ 선호음식은 목록에서 다중선택이 가능하게 하려한다.
+==> <select multiple> 이렇게 쓰면 여러개를 선택할 수 있다.
+==> 기본으로 화면에 보여지는 갯수를 조정하려면 <select size="3" multiple> 이렇게 쓴다.
+
+▶ 선호프로그램
+==> Option에 그룹을 지어줄 수 있다.
+==> <optgroup label="그룹명"> <option> <option> </optgroup>
+
+▶ 브라우저 
+==> datalist -- 목록에 쓰는게 있으면 선택, 없으면 직접 입력 (select + text)
+==> 일반적인 <select>는 선택만 가능, <datalist>는 기본적으로 보여주고 원하는게 없으면 직접 입력하게 함
+
+▶ 파일첨부
+==> 인풋태그 타입은 file
+
+▶ 가입인사말
+==> <textarea rows="" cols="">
+
+▶ submit과 reset은 선택자를 안줬는데, 타입으로 css에서 선택하게 할 수 있다.
+
+input[type=submit], input[type=reset] {		
+}
+
+=================================================================================================================================================
+
+[ 테이블 태그 ]
+
+ === 01table.html ===
+
+<thead> -- 컬럼
+<tbody> -- 데이터
+<tr> -- 한 행 // 컬럼들은 한 행에 있으니 tr 1개만, 데이터는 두 개의 행이 있으니 tr 2개
+<th> -- 컬럼명
+<td> -- 실제 데이터 // 컬럼이 3개이니 <td>도 3개 필요
+
+border-collapse: collapse; ==> 경계선을 허물으라는 뜻이다.
+==> 여러개의 경계선들이 맞닿아 있으면 서로서로 경계선들이 생기는데 이것을 방지한다.
+
+▶ <th>는 자동으로 가운데 정렬이 된다.
+▶ <td>는 기본값이 왼쪽 정렬이다.
+
+ === 02table.html ===
+
+▶ 테이블에 대한 설명문 달기
+==> <caption> // 테이블태그 안에 넣어야 한다.
+==> 캡션은 기본적으로 테이블 위에 나온다.
+==> 캡션 위치를 아래에 나오도록 하려면 <caption align="bottom"> 이렇게 한다.
+
+
+ === 03table.html ===
+
+▶ 세로정렬하기
+==> text-align은 가로정렬
+==> vertical-align은 세로정렬 
+       ※ 기본값은 가운데정렬(middle)
+
+★ 주의할 사항은 내용물이 table 태그내에 있든지 또는 내용물의 display가 table 일때만 적용된다는 것이다.
+==> table만 vertical-align을 쓸 수 있다는 것이다.
+==> 만약 display가 table이 아니라면, 감싸고 있는 애를 display: table;로 바꿔서 세로정렬을 사용할 수 있다.
+==> 하나하나를 display: table; 로 바꿔서하면 적용이 안된다. 반드시 감싸고 있는 애를 바꿔야 한다.
+==> 또 하나하나를 display: table-cell; 로 바꿔야한다.
+
+감싸는 애는 display: table; // 각각의 내용물은 display: table-cell;로 해줘야 vertical-align을 사용할 수 있다.
+
+▶ css에서 자식을 선택할땐 몇번째 자식인지를 설정해서 선택할 수도 있다.
+    ==> div#mydiv > div:nth-child(4) --> 4번째 자식
+
+
+
+ === 04table.html ===
+
+▶ colgroup 태그
+행의 갯수와 상관없이 컬럼별 데이터들을 그룹으로 묶는 것이다.
+
+<colgroup span="1"> ==> 한 개의 컬럼으로 데이터들을 묶는다.
+<colgroup span="2"> ==> 두 개의 컬럼으로 데이터들을 묶는다.
+
+
+<colgroup span="1">
+<colgroup span="2">
+
+이렇게 동시에 쓰면 총 3개의 컬럼 중에서 한 개의 컬럼으로 데이터들을 한 그룹으로 묶고, 나머지 두 개의 컬럼으로 데이터들을 한 그룹으로 묶는다.
+
+▶ colgroup은 컬럼별로 행이 엄청 많을 때 그룹지어서 색깔을 줄 때 쓰기 좋다.
+
+
+
+
+ === 05table.html ===
+
+▶ 열 병합
+
+thead 태그와  tfoot 태그는 테이블에서 오로지 1번만 사용한다.
+thead 태그는 표의 타이틀 용도로 쓰이고, (시작)
+tbody 태그는 표의 데이터를 표시하는 용도로 쓰인다.(본문)
+tfoot 태그는 표의 마지막에 요약데이터나 총계등을 보여줄 때 사용한다. (끝)
+
+
+ === 06table.html ===
+
+▶ 행 병합
+
+rowspan을 할 땐 thead, tbody 등이 있으면 안 된다.
+전부다 <tr> ~ </tr> 식으로만 있어야 한다.
+
+thead, tbody, tfoot은 semantic 태그처럼 알려주기만 하는 기능이다.
+
+=================================================================================================================================================
+
+08월 19일 오후수업 
+
+ === 06table.html  마무리 ===
+
+[ 다양한 선택자들 ]
+
+▶ th#titleFirst ~ th ==> th#titleFirst 다음에 나오는 모든 형제 태그(==엘리먼트, 노드) 중에 th 태그들만 선택한다.
+
+▶ table > tbody >  tr:nth-child(2) > td:nth-child(1) == td:first-child(장남)
+▶ table > tbody > tr:nth-child(2) > td:nth-child(3) == td:last-child(막내)
+
+table 태그내에 tbody 태그를 기술하지 않더라도 웹브라우저 내에서는 항상 tbody 태그를 자동적으로 생성시켜 주므로
+table > tr:nth-child(2) > td:first-child 와 같이하면 안 되고, 
+table > tbody > tr:nth-child(2) > td:first-child 와 같이 selector 를 잡아줘야 한다.
+
+
+
+tr:last-child > td:first-child > span:nth-child(2) 의 바로 밑의 동생은?? 
+==> tr:last-child > td:first-child > span:nth-child(2) + span
+==> tr:last-child > td:first-child > span:nth-child(2) 태그의 바로 다음에 나오는 형제태그인 span 태그 1개를 가리키는 것이다.
+
+▶ 가장 쉬운 것은 아이디나 클래스를 주는 것이다.
+
+=================================================================================================================================================
+
+[ 이미지 처리 ]
+<img alt="이미지가 안보일때 나오는 글자 입니다." src="이미지 파일 주소" title="툴팁설명">
+
+img 태그는 inline 방식이기 때문에 div로 묶어서 세로로 떨어지게 한다.
+
+border-radius: 50%;	/* 상하좌우 사각진 부분을 절반씩 깎아서 둥근원 모양이 된다. */
+
+=================================================================================================================================================
+
+[ 퀴즈 ]
+
+header 
+section(aside / article)
+footer
+
+<form>도 block, <div>도 block
+
+href="#"==> 자기 자신을 의미한다. 어디안가고 그냥 자기를 다시 보여줌
+
+float를 쭉 이어서 쓸거면, float를 안 쓸 파트부터 clear를 주면 된다.

@@ -1,0 +1,565 @@
+09월 06일 오전수업
+
+[ Figures ] 
+
+figure 태그는 HTML5의 기능이다. 
+figure 태그는 사진, 도표, 삽화, 오디오, 비디오 등을 담는 컨테이너 역할을 한다. (== <div>)
+
+부트스트랩에서는 클래스명에 figure를 넣어주면 된다.
+(예시): <figure class="figure">
+
+** img-fluid: 반응형 이미지, width에 따라서 이미지 크기가 변한다.
+
+figcaption은 선택사항일 뿐이다. figure 태그에 대한 설명문일 뿐이다.
+
+====================================================================================
+
+[ alert ]
+
+클래스명에 alert를 주고, 그 이후에는 alert의 테마별 클래스명을 주면 된다.
+※ 자바스크립트에서 말하는 alert와는 다르다.
+
+<div class="alert alert-primary" role="alert"> 에서 role="alert"는 생략해도 괜찮다. 단지, alert 임을 표시하기 위함이다.
+
+<a href="#" class="alert-link"></a>는 검정색의 굵은 글씨로 표시한다.
+
+※ &times; 은 X표시이다.
+==> 창 닫을때 나오는 X표시
+
+====================================================================================
+
+[ badge ]
+
+카카오톡에 읽지 않은 메시지에 대한 표시와 같은 것이다.
+예시: badge badge-secondary 은 회색 뱃지
+==> 해당 기능 클래스명, 색깔 클래스명 식으로 쓴다.
+
+====================================================================================
+
+[ button ]
+
+class="btn btn-색깔"
+
+버튼으로 만들 수 있는 type: submit, link(<a>), reset, button
+
+★ button 태그는 display가 inline 방식인데, 클래스명에 btn-block을 쓰면 block 방식이 된다.
+==> 주로 스마트폰에서 사용한다.
+
+기본값의 button은 마우스 오버시 색깔이 변하고, 마우스 아웃시 원래색깔로 된다.
+만약에 클래스명에 active를 쓰면 계속 마우스 오버시 색깔로 된다.
+
+button에 disabled 속성을 넣으면 버튼을 비활성화한다.
+==> <a>태그에 쓰는 disable은 클래스에 주는 것이다.
+
+
+button을 그룹으로 묶으려면 버튼들 상위에 div태그를 놓고 클래스명에 btn-group을 주면 된다.
+
+<div class="btn-group btn-group-lg" role="group">
+   <button type="button" class="btn btn-secondary">Apple</button>
+   <button type="button" class="btn btn-secondary">Samsung</button>
+   <button type="button" class="btn btn-secondary">Sony</button>
+</div>
+
+▶ 세로정렬은 btn-group-vertical
+
+▶ aria-labelledby="아이디명" 은 label의 for와 똑같이 mapping을 시켜주는 속성이다.
+
+★ btn-group은 inline 방식이 기본값이다.
+
+====================================================================================
+
+[ card ]
+
+카드는 유연하고 확장가능한 내용을 담을 수 있는 공간이다.
+카드는 내용 주위에 패딩이 있으며 테두리가 있는 상자이다. 여기에는 머리글, 바닥글, 콘텐츠, 색상 등에 대한 옵션이 포함되어있다.
+
+** width: 18rem  
+<!-- 18rem 은 font size의 18배 크기임. 즉, 상대적 크기임. 만약에 width: 280px; 으로 하면 px 이므로 고정 크기임. -->
+
+<div class="card"> -- 카드 최상위 태그
+   <img class="card-img-top"> - 이미지 // card-img-top을 쓰면 카드에서 이미지가 가장 맨 위에 나온다.
+   <div class="card-body"> -- 카드 내용물 
+     <h5></h5> -- 제목(card-title)
+     <p></p> -- 본문(card-text)
+     <a></a> -- 자세히보기 등 링크(card-link)
+   </div> // end of card-body
+</div> // end of card
+
+class="card-img-top"나 class="card-img-bottom" 를 넣으면 이미지가 들어간 부분의 테두리가 살짝 둥글게 처리된다.
+
+카드는 또한 card-header, card-body, card-footer로 나뉜다.
+
+▶ stretched-link는 카드 내부에 <a>가 있는데 카드 어디든 눌러도 저절로 <a>를 누르게 만든다.
+(== for와 비슷하다)
+==> 카드 어디를 누르던 pointer 모양으로 커서가 바뀐다.
+
+▶ Card Columns
+.card-columns 클래스는 벽돌과 같은 카드 그리드를 만듭니다. 더 많은 카드를 삽입하면 레이아웃이 자동으로 조정됩니다. card의 개수를 달리 하면서 실행해 보면 이해할 수 있다.
+
+==> 카드는 그리드처럼 우리가 따로 열 갯수를 지정해서 레이아웃을 설정할 필요가 없다.
+==> 자동으로 레이아웃이 보정된다.
+
+▶ Card Deck
+.card-deck 클래스는 높이와 너비가 같은 카드 그리드를 만듭니다. 더 많은 카드를 삽입하면 레이아웃이 자동으로 조정됩니다.
+카드는 작은 화면(576px 미만)에서도 가로로 표시되지 않고 세로로 표시됩니다.
+==> 같은 card-deck으로 묶인 애들중에서 내용물이 가장 많은 애를 기준으로 너비와 높이가 설정된다.
+
+▶ Card Group
+.card-group 클래스는 .card-deck과 ​​유사합니다. 유일한 차이점은 .card-group 클래스가 각 카드 사이의 왼쪽 및 오른쪽 바깥여백을 제거한다는 것입니다.
+카드는 위쪽 바깥여백 및 아래쪽 바깥여백이 있는 작은 화면(576px 미만)에서도 가로로 표시되지 않고 세로로 표시됩니다.
+
+====================================================================================
+
+[ carousel ]
+
+이벤트 배너
+
+광고에서 주로 쓰인다.
+
+====================================================================================
+
+[ collapse ]
+
+collapse는 많은 양의 콘텐츠를 숨기고 표시하려는 경우에 유용합니다.
+
+jQuery의 아코디언과 똑같다.
+==> 굳이 jQuery로 안 짜더라도, 부트스트랩의 collapse를 쓰면 된다.
+
+<button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#demo1">
+   data-target 을 가지는 버튼 토글
+</button>
+==> 얘는 카드의 탭을 의미한다. data-target으로 본문 내용을 mapping 시켜야 한다.
+
+<div class="collapse mb-1" id="demo1" >
+ <div>
+   카드 내용 본문
+ </div>
+</div>
+==> 위의 카드 탭을 토글하면 이 본문 내용이 보여진다.
+
+<a href="#demo2" class="btn btn-primary" data-toggle="collapse">
+
+★ button태그이라면 data-target으로 mapping시키고, a태그라면 href="아이디명"으로 mapping시킨다.
+
+▶ 여러 타겟을 동시에 열려면 클래스명을 이용해서 data-target을 잡으면 된다.(Multiple-target)
+
+▶ 전체를 아코디언으로 만드려면, 최상위 태그에 accordion을 클래스로 주고, 아래에는 collapse처럼 똑같이 많든다.
+
+★ aria-controls="" : 현재 요소가 제어하는 대상을 명시하는 속성으로 탭메뉴와 본문을 연결시켜준다. 상태 값은 tabpanel의 id명 입력
+
+★ 아코디언은 collapse에 포함되어져 있다.
+
+====================================================================================
+
+[ dropdown ]
+
+HTML의 select와 비슷하다.
+
+클래스명 dropdown, 안에는 dropdown-toggle로 버튼을 하나 만들어준다.
+★ 버튼에는 반드시 dropdown-toggle에 dropdown을 적어서 mapping 시켜줘야 한다.
+
+<div dropdown>
+  <button dropdown-toggle>
+  <div dropdown-menu>
+     <a dropdown-item>
+     <a dropdown-item>
+     <a dropdown-item>
+
+▶ split button 은 버튼을 두개로 쪼개는 것이다.
+
+<div dropdown>
+  <button>
+  <button dropdown-toggle-split>
+  <div dropdown-menu>
+     <a dropdown-item>
+     <a dropdown-item>
+     <a dropdown-item>
+
+
+====================================================================================
+
+[ form ]
+
+부트스트랩의 form 태그 사용시 두 가지 유형의 양식 레이아웃을 제공한다.
+1. Stacked (full-width) form: 모바일을 위하여 인풋태그의 width를 크게 해준다.
+2. Inline form
+
+항상 먼저 <input>, <textarea>, <select> 등 태그는 <div class="form-group"> 으로 감싸준다.
+
+<div form-group>
+<input>
+</div>
+
+<div form-group>
+<textarea>
+</div>
+
+<div form-group>
+<select>
+</div>
+
+▶ <input>, <textarea>, <select>등은 모두 .form-control 클래스이며, 너비는 100%이다. (full-width)
+
+※ <select> 개별선택, <select multiple> 다중선택
+
+★ input type이 file인 태그는 .form-control이 아닌 form-control-file을 사용한다.
+
+.form-control-plaintext을 사용하면 맨처음엔 테두리가 보이지 않고 글자만 보이게 된다.
+==> readonly 속성을 사용하면 읽을 수만 있고 쓰기는 불가능하다.
+==> <input class="form-control" type="text" placeholder="Readonly input here…" readonly>
+
+<form class="form-inline">
+form-inline은 너비가 최소 578px인 뷰포트 내의 양식에만 적용된다. 더 작은 화면에서는 세로방향으로 적용된다.
+==> 폼태그안의 요소들이 inline 방식으로 옆으로 나아간다.
+
+▶ 폼 태그 바로 아래에 div class="form-group row" 를 주고, 그리드식으로 배치하면 Horizontal form이 된다.
+==> 타이틀과 인풋이 inline 방식으로 나란히 있게 된다.
+
+====================================================================================
+
+[ 점보트론 ]
+
+점보트론은 특별한 내용이나 정보에 대한 추가 주의를 환기시키기 위한 큰 회색 상자를 이야기한다.
+
+클래스는 .jumbotron
+
+====================================================================================
+
+[ list group ]
+
+리스트 태그들이 사용하는 클래스이다.
+
+<ul>, <ol>에는 .list-group 클래스를 주고, <li>에는 .list-group-item 클래스를 준다.
+
+▶ .list-group-flush 클래스를 사용하면 일부 테두리와 둥근 모서리를 제거한다.
+▶ 목록 항목을 세로 대신 가로로 표시하려면(서로의 상단 대신 나란히 표시) .list-group-horizontal 클래스를 .list-group에 추가한다.
+
+====================================================================================
+
+[ modal ]
+
+Modal 구성 요소는 현재 페이지 상단에 표시되는 대화 상자/팝업 창입니다.
+
+버튼을 하나 만들고, data-toggle="modal", data-target="내용물 아이디값" 식으로 만든다.
+
+modal header - title
+modal body - 내용물
+modal footer - close, save changes 버튼 등
+
+&times; ==> 얘는 X표시를 나타낸다. (클래스에 close를 넣으면 종료버튼이 된다)
+
+data-backdrop="static"
+==> static backdrop modal은 직접 close 버튼을 눌러야 닫아진다.
+==> 나머지는 바깥에 배경을 누르면 알아서 닫아짐
+
+모달 내부에 내용물이 많으면 웹페이지에 스크롤바가 자동적으로 추가된다.
+
+모달 내부에 내용물이 많으면 웹페이지에 스크롤바를 추가하지 않고 페이지 자체가 아닌 모달 내부에서만 스크롤할 수 있다.
+==> <div class="modal-dialog modal-dialog-scrollable">
+
+====================================================================================
+
+[ nav ]
+
+간단한 수평 메뉴를 만들려면 <ul> 요소에 .nav 클래스를 추가한 다음 
+각 <li>에 대해 .nav-item을 추가하고 
+해당 링크에 .nav-link 클래스를 추가합니다.
+(디폴트는 왼쪽정렬이다.)
+
+가운데 정렬은 ul에 justify-content-center를 준다.
+==> 오른쪽 정렬은 justify-content-end
+==> 세로 정렬은 flex-column
+
+전체 넓이에 동일한 크기로 배분하려면 nav-fill 클래스를 <ul>에 준다.
+==> nav-pills 클래스는 선택된 탐색 메뉴를 채워진 색으로 변경합니다.
+==> nav-justified도 nav-fill과 똑같다.
+
+nav와 dropdown을 섞을 수도 있다.
+==> dropdown은 select와 비슷하다.
+
+Toggle Dynamic 탭 
+탭을 토글 가능하게 만들려면 각 링크에 data-toggle="tab" 속성을 추가하십시오. 
+그런 다음 모든 탭에 대해 고유한 ID가 있는 .tab-pane 클래스를 추가하고 
+.tab-content 클래스가 있는 <div> 요소 안에 래핑합니다.
+
+[ 상세 설명 ]
+1. <a> 태그에 data-toggle="tab"을 추가한다
+2. 내용물들의 div태그에 id와 class="tab-pane"를 추가한다.
+3. 그리고 <a>태그에서 그 아이디를 href로 mapping한다.
+4. 또한 내용물을 감싸는 div태그에는 class="tab-content"를 추가해야 한다.
+==> fade를 추가하고 싶다면 tab-pane 다음에 fade 클래스명도 추가하면 된다.(부드럽게 전환되는 효과)
+
+====================================================================================
+
+[ navbar ]
+
+navigation bars는 페이지 상단에 배치되는 탐색 헤더이다.
+-------------------------------------------------------------------------------------------------------------------------------------
+[ 반응형 축소 클래스 ]
+<nav class="navbar navbar-expand-sm bg-light">
+사이즈가 small 범위에 들어오면 확장이 된다.
+
+navbar-expand-lg
+large는 992px 이상 1200px 미만
+width가 이 범위에 들어오면 확장이 된다.
+-------------------------------------------------------------------------------------------------------------------------------------
+[ brand / Logo ]
+
+<!-- Brand/logo -->
+<a class="navbar-brand" href="#"><img src="../images/logo2.png" /></a>
+
+
+▶ 브랜드 로고나 아이콘등은 fontawesome을 이용한다.
+
+폰트어썸을 사용하려면 부트스트랩과 제이쿼리처럼 먼저 스크립트로 CDN주소를 적어줘야 한다.
+
+그리고 이미지를 넣을 곳 클래스에 해당 아이콘 클래스명을 적어주면 된다.
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+[ Collapsing The Navigation Bar(아코디언 같은 Navigation Bar) ]
+
+접을 수 있는 탐색 모음을 만들려면 버튼을 class="navbar-toggler", data-toggle="collapse" 및 data-target="#thetarget"인 버튼을 사용하세요.
+
+그런 다음 class="collapse navbar-collapse"를 사용하여 div 요소 내부에 navbar 콘텐츠(링크 등)를 래핑한 다음 버튼의 데이터 대상과 일치하는 id: "thetarget"을 지정합니다.
+
+
+1. 먼저 navbar-expand-사이즈 를 넣어준다.
+
+2. 아래의 버튼은 화면이 작아지면 메뉴바가 생기는 곳이다. 
+<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
+   <span class="navbar-toggler-icon"></span>
+</button>
+
+====================================================================================
+
+09월 06일 오후수업
+
+[ Fixed Navigation Bar ]
+
+nav 태그 클래스명에 fixed-top 클래스를 주면 상단에 고정이 된다.
+nav 태그 클래스명에 fixed-bottom 클래스를 주면 하단에 고정이 된다.
+
+고정 탐색 모음은 페이지 스크롤과 관계없이 고정 위치(상단 또는 하단)에 계속 표시됩니다.
+fixed-top/bottom 클래스를 사용하여 탐색 모음이 페이지 하단에 유지되도록 합니다.
+
+▶ 만약 margin이나 padding을 안주면 fixed-sides가 적용된 navigation bar는 default로 full-width를 사용하게 된다.
+==> 그래서 body 태그에 px-3과 nav에는 mx-3을 주어서 여유공간을 준다.
+
+====================================================================================
+
+[ Fixed Navigation Bar - sticky ]
+
+맨 위와 맨 아래가 아닌 중간쯤에 위치하다가 스크롤을 해도 fixed된 상태의 navigation bar 이다.
+
+nav 태그에 sticky-top 혹은 sticky-bottom을 주면 된다.
+
+====================================================================================
+
+[ Pagination ]
+
+몇 페이지, 몇 페이지를 표시하는 페이징 처리이다.
+
+<ul>태그를 사용하여 클래스에 pagination을 쓴다.
+<li> 태그에는 page-item을 쓰고, <a> 태그에는 page-link를 쓴다.
+
+&laquo; : << 이전 기호
+&raquo; : >> 다음 기호
+
+====================================================================================
+
+[ tooltip ]
+
+hover가 되면 나오는 작은 팝업상자이다.
+
+툴팁(도구설명)을 생성하려면 data-toggle="tooltip" 속성을 요소에 추가한다.
+제목 속성을 사용하여(title) 툴팁 내부에 표시되어야 하는 텍스트를 지정한다.
+또한, data-placement="bottom, right...." 등으로 툴팁이 나오는 위치를 지정할 수 있다.
+==> 기본값은 data-placement="top"이다.
+
+※ 툴팁은 jQuery로 초기화해야한다. 지정된 요소를 선택하고 tooltip( ) 메서드를 호출한다.
+
+$(document).ready(function(){
+   $('[data-toggle="tooltip"]').tooltip();   
+});
+
+==> 스크립트에 다음과 같이 작성한다.
+
+<script src="../js/jquery-3.3.1.min.js" type="text/javascript"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+<script src="../js/bootstrap.bundle.min.js" type="text/javascript"></script>
+
+▶ 스크립트의 순서는 jQuery - bootstrap js - bootstrap css
+
+▶ 반드시 부트스트랩에 클래스만 줄 필요는 없고, 필요하다면 내가 직접 CSS를 줘도 괜찮다.
+
+====================================================================================
+
+[ popover ]
+
+popover는 tooltip과 유사하다. 하지만 사용자가 요소를 클릭할 때 나타나는 팝업상장이며, 툴팁보다 내용물을 많이 담을 수 있다.
+
+팝오버를 생성하려면 data-toggle="popover" 속성을 요소에 추가한다.
+
+마찬가지로 제목은 title 속성에, 내용은 data-content 속성을 요소에 추가한다.
+
+위치값 default는 오른쪽이다. 
+
+※ 팝오버는 jQuery로 초기화해야한다. 지정된 요소를 선택하고 popover( ) 메서드를 호출한다.
+
+$(document).ready(function(){
+   $('[data-toggle="popover"]').popover(); 
+});
+
+==> 스크립트에 다음과 같이 작성한다.
+
+====================================================================================
+
+[ toast ]
+
+HTML 문서 참조
+
+====================================================================================
+
+[ float ]
+
+.float-right 클래스를 사용하여 요소를 오른쪽으로 또는 .float-left를 사용하여 왼쪽으로 요소를 띄우고 .clearfix 클래스를 사용하여 요소를 지우십시오.
+(.clearfix == clear: both;)
+
+
+부모 클래스에 display: flex를 주면 자식클래스는 inline-block처럼 옆으로 쭉 나온다.
+==> 자식클래스에게 margin 0 auto;를 주면 좌 우가 알아서 가운데 정렬이 된다.
+==> margin auto 0;은 수직정렬
+==> margin: auto;는 딱 가운데에 나온다.
+
+★ 부모태그의 display: flex일때만 가능하다.
+
+====================================================================================
+
+[ border ]
+
+<span class="border">사면테두리</span>
+<span class="border border-0">테두리없음</span>
+<span class="border border-top-0">상단테두리없음</span>
+<span class="border border-right-0">우축테두리없음</span>
+<span class="border border-bottom-0">하단테두리없음</span>
+<span class="border border-left-0">좌측테두리없음</span>
+
+<span class="rounded-sm"></span>
+<span class="rounded"></span>
+<span class="rounded-lg"></span>
+<span class="rounded-top"></span>
+<span class="rounded-right"></span>
+<span class="rounded-bottom"></span>
+<span class="rounded-left"></span>
+<span class="rounded-circle"></span> ==> border-radius: 50%와 같다.
+<span class="rounded-0"></span>
+
+====================================================================================
+
+[ width & height ]
+
+w-* 클래스(.w-25, .w-50, .w-75, .w-100, .mw-100)로 요소의 너비를 설정합니다.
+
+h-* 클래스(.h-25, .h-50, .h-75, .h-100, .mh-100)로 요소의 너비를 설정합니다.
+==> height는 display가 inline-block일때 먹힌다.
+
+====================================================================================
+
+[ Responsive Embeds ]
+
+부모의 너비에 따라 반응형 비디오 또는 슬라이드쇼 포함을 만듭니다.
+
+
+동영상 또는 재생목록 퍼가기
+1. 컴퓨터에서 퍼가려는 YouTube 동영상 또는 재생목록으로 이동합니다.
+2. 공유공유를 클릭합니다.
+3. 공유 옵션 목록에서 퍼가기를 클릭합니다.
+4. 표시되는 상자에서 HTML 코드를 복사합니다.
+5. 이 코드를 웹사이트 HTML에 붙여넣습니다.
+6. 네트워크 관리자의 경우: 방화벽 허용 목록에 youtube.com을 추가해야 합니다.
+7. 중요: 아동을 대상으로 하는 웹사이트 또는 앱에서 YouTube 콘텐츠를 퍼가는 경우 이 도구를 사용해 사이트 또는 앱을 자체 지정해야 합니다. 자체 지정을 하면 Google이 이러한 사이트 또는 앱에 개인 맞춤 광고를 게재하지 않으며 내장된 플레이어의 일부 기능이 사용 중지됩니다.
+
+※ 동영상을 퍼갈때 상단 주소창에 주소를 퍼가는 것이 아니라, 공유-퍼가기를 사용해서 퍼가야 한다.
+
+====================================================================================
+
+[ 예제 1 ]
+
+네비게이션 바 
+점보트론
+카드 - 한 행에 3개씩, card-deck 사용
+
+[ 예제 2 ]
+
+네비게이션 바 - fixed-top
+점보트론
+카드 
+
+[ 예제 3 ]
+
+네비게이션 바 
+Carousel
+카드
+
+※ .container, .container-fluid는 기본값으로 padding이 y축에는 0, x축에는 15px가 들어가 있다.
+
+[ 예제 4 ]
+
+점보트론에 다른 색깔을 넣고 싶다면, div태그를 사용해서 직접 CSS를 주면 된다.
+
+====================================================================================
+
+[ 인덱스 ]
+
+★ carousel을 하려면 이미지들의 크기를 똑같이 맞춰야 한다. (width, height)
+
+네비게이션바 - navbar-expand-lg
+==> 아코디언 같은 navigation bar를 위하여 버튼태그와 스팬태그를 만들고, data-target을 ul 태그를 감싸는 div로 한다.
+
+그리드로 상단의 3개의 열은 카드 // 9개의 열은 carousel로 쓴다.
+
+==> custom-topcontents 은 우리가 직접 만든 css를 적용했음을 명시해준다.
+
+중앙컨텐츠 8개 열 / 4개 열 (카드 2개, list-group)
+==> 8개열은 또 6대 6로 나눈 중첩된 그리드이다.
+
+하단에는 썸네일 4개(small이상이면 6개씩 ,large 이상이면 3개씩 차지), <hr>+카피라이터
+==> 썸네일은 액자처럼 틀이 생겨져있는 사진이다.
+==> 스마트폰은 xs이다. sm은 스마트폰보단 조금 큰 거임
+
+▶ 차후의 badge를 DB와 연동시켜 새로운 글이나, 현재까지 써진 글을 몇개인지 실시간으로 갱신되게 하자
+
+[ 보드 ]
+
+상단 네비게이션 - 아코디언같은 네비게이션 바
+상단 컨텐츠 - 카드(3), 이미지(9)
+중앙 컨텐츠 - 네비게이션(3), 반응형테이블(9) - 스트라이프 테마 // 반응형 테이블은 내용물이 많으면 하단에 자동적으로 스크롤바가 생긴다.(== 컬럼이 많으면)
+하단 컨텐츠 - 페이지네이션
+footer - 카피라이터
+
+[ 로그인 ]
+
+폼태그
+★ 자바스크립트의 alert와 부트스트랩의 alert는 다르다
+인풋태그들은 form-control 클래스가 주어지는데, 그러면 width가 100%가 된다.
+
+[ 레지스터 ]
+
+폼태그
+인풋태그들은 form-control 클래스가 주어지는데, 그러면 width가 100%가 된다.
+
+
+====================================================================================
+
+[ 과제 ]
+
+쇼핑몰 시작페이지 ==> 단일 상품 쇼핑몰(복합X)
+
+품목 예: 신발, 향수, 안경, 침대 등등등.. 아무거나
+
+제목: [반응형웹_시작페이지]박성현_index.html
+파일: 반응형웹_시작페이지_박성현.zip -- images / html 파일
+기한: 9월 13일 오후 06시까지
+
+
