@@ -1,0 +1,228 @@
+07월 14일 오전수업
+io.day2.InputStreamReader_4
+io.day2.OutputStreamWriter_5
+io.day2.BufferdReader_Writer_6
+io.day3.Student & Main 
+==============================================================
+[InputStreamReader]
+
+다리(Bridge) 역할을 수행하는 스트림
+
+System.in 은 키보드로 입력하기 때문에, 문자(char)밖에 없다.
+그래서 문자기반 스트림(2byte) FileWriter를 쓸 수 있다.
+
+허나 System.in은 1byte 기반 스트림이고 FileWriter는 2byte 기반 스트림이여서, 입력과 출력의 바이트가 다르기 때문에 다리 역할을 수행하는 스트림을 통해서 연결해준다.
+
+>> 브릿지 스트림 InputStreamReader => 1byte 를 2byte 로 변경 
+
+new InputStreamReader(인풋스트림)
+
+* FileWriter, FileOutputStream 들은 타겟파일이 없어도 자동으로 새로 만들어 준다.
+
+
+==============================================================
+[OutputStreamWriter]
+
+다리(Bridge) 역할을 수행하는 스트림
+
+FileReader => 2byte 기반
+System.out => 1byte 기반
+
+모니터에 출력되는 것은 1byte 기반인데 이것을 2byte 기반으로 변경해주는 것이다.
+>> 브릿지 스트림 OutputStreamWriter =>1byte 를 2byte로 변경
+
+new OutputStreamWriter(출력스트림);
+==============================================================
+[BufferedReader & BufferedWriter & PrintWriter]
+
+3가지 모두 필터(보조) 스트림이다. 
+2byte 기반이다. 오로지 char타입만 가능하다. (글자만)
+
+new BufferedReader(arg0, arg1)
+
+arg0 - 입력스트림
+arg1 - 버퍼의 사이즈, 기본은 512byte
+
+
+>> 한 번에 읽어와서 메모리버퍼에 저장해놓은 다음
+>> 메모리버퍼가 꽉차면 그때 한번에 쓰기 메모리 버퍼에 옮기고
+>> 메모리 버퍼에 있는걸 한 번에 쭉 쓴다.
+
+readline( ) 는 한 줄씩 읽어온다.
+>> read처럼 int 반환이 아니라, String 반환이다.
+----------------------------------------------------------------------------------------------------
+PrintWriter prtWriter = new PrintWriter(fw, autoFlush);
+
+autoFlush에 true를 넣어주면 엔터를 만날때마다 자동적으로 flush를 하게한다.
+
+>>flush 란 ? 출력버퍼에 임시로 보관되어 스트림으로 출력될 때까지 대기중인 데이터를 스트림으로 내보내는 것을 flush 라고 한다.
+>>write() 메소드는 flush() 메소드와 함께 사용되어야만 출력버퍼에 들어가 있던 내용이 모니터(또는 파일)에 출력된다.
+
+
+PrintWriter는 
+
+write( ) 대신에 println( ) 을 쓴다. flush ( ) 는 위에서 autoflush했으니 안 써도된다.
+==============================================================
+[ObjectInputStream & ObjectOutputStream]
+
+객체 직렬화하는 필터(보조)스트림
+
+파라미터 생성자를 만들면 기본 생성자가 사라진다. 그래서 직접 넣어줘야 한다.
+기본생성자 안 쓰겠다면 굳이 안 만들어도 된다. 허나 나중에 JSP에서는 꼭 넣어줘야한다.
+
+>> 매번 스캐너로 학생을 추가해도, 프로그램을 재실행하면 휘발된다.
+>> 코드로 써놓은 학생들은 기억되지만, 스캐너로 입력한 애들은 코드로 남아있지 않기 때문에 휘발된다.
+>> 이것을 방지하기 위해서, 객체를 파일 속에 save하는게 Object 필터스트림들이다. (직렬화)
+
+ObjectOutputStream => C: 에 객체를 저장한다.
+ObjectInputStream => C: 에 저장된 객체를 불러온다.
+
+파일 속에 객체를 저장하는 것은 바이트의 흐름을 따른다.
+그 객체를 다시 꺼내오는 것도 바이트의 흐름을 따른다.
+>> 객체 안에 저장되어 있는 데이터를 다른 곳으로 전송하려면 바이트 형태로 일일이 분해해야 한다.
+>> 객체를 바이트로 변환하는 작업을 직렬화(Serialization) 라고 부른다.
+
+★ 객체 => 바이트로 분해(직렬화) => C: 에 저장 => 불러오기 => 객체로 변환(역직렬화)
+저장하고자 하는 객체의 클래스에 implements Serializable 만 쓰면 된다.
+>> 이러면 객체는 파일 속에 저장할 수 있다.
+
+클래스들은 클래스마다 버전을 나타내는 유니크(고유)한 아이디가 있다 (=UID)
+>> 클래스의 내용이 바뀌면 그 클래스의 버전 UID 역시 바뀐다.
+>> UID 값이 바뀌게 되면 서로 다른 클래스로 인식한다.
+
+직렬화했던 것을 역직렬화 하는데, 역직렬화한 클래스 객체의 UID 값과 직렬화된 클래스의 UID 값이 서로 다르면 올바르지 않은 객체로 인식한다.
+★ UID를 고정시켜야 동일한 클래스임을 증명할 수 있다.
+
+
+직렬화는 다른 곳에서도 쓸 수 있으니 FileManager에 static 메소드로 만든다.
+
+1. 노드스트림 생성 (파일에 저장 FileOutputStrea)
+
+2. 속도향상을 위해 필터스트림 장착
+
+3. ObjectOutputStream에 bufOst를 파라미터로 넣어서 객체를 파일에 저장하는 스트림 생성
+
+4. objOst.writeObject(obj);
+// objOst 을 사용하여 객체 obj 를 파일에 기록한다.
+
+5. close( ) 를 해서 자원을 반납한다. objOst -> bufOst -> fost 순으로 
+
+
+스캐너로 입력한 엄정화는 왜 저장이 안 된 것일까?
+돌릴때마다 ArrayList를 계속해서 새로 만들기 때문이다!
+
+==============================================================
+
+07월 14일 오후수업
+
+[ObjectInputStream & ObjectOutputStream]
+
+스캐너로 입력한 엄정화는 왜 저장이 안 된 것일까?
+돌릴때마다 직렬화를 시켜서 파일을 새로 만들고, 예전꺼에 덮어씌워지기 때문이다.
+
+if( !savefile.exists() ) { // savefile 이 존재하지 않으면 
+studList = new ArrayList<>();
+				
+Student stud_1 = new Student("한석규",20,"서울시 강동구");
+Student stud_2 = new Student("두석규",21,"서울시 강서구");
+				
+studList.add(stud_1);
+studList.add(stud_2);
+				
+// 직렬화(Serialization) List<Student> studList 을 "C:/iotestdata/객체저장용/studList.dat" 파일에 저장시키자.
+				
+FileManager.objectToFileSave(studList, saveFileName);
+}
+
+
+if 구절로 exsists로 ArrayList 생성부터 직렬화까지를 감싼다면, 프로그램이 실행될때마다 List를 다시 만들어서 한석규, 두석규만 있는 리스트를 덮어씌우지 않기 때문에 엄정화가 사라지는 것을 막을 수 있다. 
+==> .exsist( )가 true가 떠서 if 실행문으로 안들어갔기에 새로 List를 만들어서 덮어씌우지 않고, 엄정화까지 포함된 studList.dat를 불러오기 때문이다.
+
+getObjectFromFile 은 studList 이니깐, 캐스팅하여서 studList에 넣어서 지금까지 기록된 파일들을 다시 넣어준다.
+
+★ Key point : studList = (List<Student>) FileManager.getObjectFromFile(saveFileName);
+
+왜냐면 클래스가 가장 먼저 실행되면 리스트는 null이고, 파일이 없어야 새로운 List 가 생성되는데 파일이 이미 있다면 생성되지 않기때문에 NullPointerException이 뜬다. 이렇게 한다면 파일에 있던 기존 List를 다시 넣어주는것이여서 기존의 등록된 학생들까지 다 뜬다.
+
+
+★ 17일차 과제에 직렬화 추가해보기 ( 구직자용 파일, 구인회사용 파일, 채용공고용 파일 )
+
+==============================================================
+
+★★★★★
+[Oracle]
+
+Database : 데이터를 모아서 관리해주는 것을 Database라고 한다.
+
+설치
+
+1. 오라클 설치
+
+▷ 패스워드 설정 (기본적으로 관리자 계정이 있다.)
+- default로 2가지가 존재한다. 'SYS'와 'SYSTEM'이다.
+- 관리자가 정 / 부로 나뉜 것이다. 
+- 정 : SYS (모든 것을 다 한다.) / 부 : SYSTEM (관리자이긴 하지만 1개만 못 한다.)
+- SYS 오라클DB서버 구동 , 서버 껏다 켜기 가능
+- SYSTEM 은 오라클DB서버 껏다 켜기 불가능
+- 둘 다 암호를 공유한다.
+
+▷ Listene Port : 1521
+
+▷ cmd -> sqlplus /nolog
+=> 오라클 명령프롬프트인 SQL 명령프롬프트 실행
+
+- show user
+==> 현재 오라클 서버에 연결된 사용자가 누구인지 보여라는 말이다.
+
+- USER is "" 
+==> 현재 오라클 서버에 연결된 사용자가 없다는 말이다.
+
+cls는 윈도우 명령프롬프트 화면 정리다. (※ cls : clear screen)
+오라클에서 화면 정리는 host를 써서 잠시 윈도우명령프롬프트로 빠져서 cls를 하면 된다.
+
+conn = connect 같다.
+==> conn system/cclass라고 해도 된다.
+▷ conn sys/cclass as sysdba (sys로 접속할땐 sysdba 등을 설정해줘야 함)
+▷ disconn  (연결해제)
+
+SQL> disconn ==> disconnect 를 disconn 으로 줄일 수 있다.
+Disconnected from Oracle Database 11g Express Edition Release 11.2.0.2.0 - 64bit Production
+
+SQL> shutdown immediate ==> 오라클 DB서버 종료하기
+==> 오라클 데이터베이스 관리자(부) 계정인 system 은 오라클 서버를 중지 또는 시작할 수 없다.
+
+** DB서버가 꺼져있더라도 sys는 연결이 가능하다.
+
+** ORACLE Database == JDK ( 원본 )
+** sqldeveloper == eclipse ( 좀 더 쓰기편하게 해주는 툴)
+
+새로 만들기 / 데이터베이스 접속 선택
+* 호스트 이름 : localhost == 127.0.0.1 == 자기 IP
+
+계정상태 : LOCK (잠겨서 사용불가) & EXPIRED (암호기간 만료)
+
+오라클은 데이터값만 대소문자를 구분한다.
+
+alter user hr account unlock; LOCKED 되어진 hr 계정을 풀어주는 것이다.
+
+alter user hr identified by cclass; hr 사용자 계정의 암호를 cclass 로 하겠다는 말이다.
+
+local_hr << local은 자기것임을 나타낸다.
+
+sys와 system 둘 다 관리자
+>> 허나, sys만 오라클서버를 껏다 켰다 할 수 있다.
+
+
+주로 수업은 샘플인 hr에서 할 것이다.
+
+관계형 데이터베이스 = 테이블 형태로 저장된 것( 열 과 행으로 이루어진 테이블 )
+
+
+★ 현재 오라클 서버에 접속된 사용자가 만든 테이블 목록 조회하기
+select * 
+from tab;
+
+자바와 오라클을 합치면, 나중에 테이블에서 나오는 사람들 하나하나가 클래스인 것이다.
+컬럼이 필드 (인스턴스 변수)이다.
+
+모아서 가져온 것은 컬렉션, 리스트, 맵들이다.
